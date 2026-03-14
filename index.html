@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>🎮 Toddler Game World!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sky: #74d7f7;
+      --sun: #FFD93D;
+      --grass: #6BCB77;
+      --pink: #FF6B9D;
+      --purple: #C77DFF;
+      --orange: #FF9A3C;
+      --white: #FFFDF0;
+      --dark: #2D2D2D;
+    }
+
+    body {
+      font-family: 'Fredoka One', cursive;
+      background: linear-gradient(180deg, #74d7f7 0%, #a8edff 40%, #d4f5d4 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Floating clouds */
+    .cloud {
+      position: fixed;
+      background: white;
+      border-radius: 50px;
+      opacity: 0.85;
+      animation: floatCloud linear infinite;
+      z-index: 0;
+    }
+    .cloud::before, .cloud::after {
+      content: '';
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+    }
+    .cloud-1 { width: 120px; height: 40px; top: 8%; animation-duration: 25s; animation-delay: 0s; }
+    .cloud-1::before { width: 60px; height: 60px; top: -30px; left: 20px; }
+    .cloud-1::after { width: 45px; height: 45px; top: -20px; left: 55px; }
+
+    .cloud-2 { width: 90px; height: 30px; top: 18%; animation-duration: 35s; animation-delay: -10s; }
+    .cloud-2::before { width: 45px; height: 45px; top: -22px; left: 15px; }
+    .cloud-2::after { width: 35px; height: 35px; top: -15px; left: 42px; }
+
+    .cloud-3 { width: 150px; height: 50px; top: 5%; animation-duration: 45s; animation-delay: -20s; }
+    .cloud-3::before { width: 70px; height: 70px; top: -35px; left: 25px; }
+    .cloud-3::after { width: 55px; height: 55px; top: -28px; left: 75px; }
+
+    @keyframes floatCloud {
+      from { transform: translateX(-250px); }
+      to { transform: translateX(110vw); }
+    }
+
+    /* Stars */
+    .stars {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .star {
+      position: absolute;
+      font-size: 1.5rem;
+      animation: twinkle 2s ease-in-out infinite alternate;
+    }
+    @keyframes twinkle {
+      from { opacity: 0.3; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1.2); }
+    }
+
+    /* Main content */
+    .container {
+      position: relative;
+      z-index: 10;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 30px 20px 60px;
+      text-align: center;
+    }
+
+    .title-wrap {
+      margin-bottom: 10px;
+      animation: bounceIn 0.8s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+    }
+
+    @keyframes bounceIn {
+      0% { transform: scale(0.3) rotate(-5deg); opacity: 0; }
+      50% { transform: scale(1.08) rotate(2deg); }
+      70% { transform: scale(0.95) rotate(-1deg); }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+
+    .title-emoji {
+      font-size: clamp(3rem, 10vw, 5rem);
+      display: block;
+      margin-bottom: -10px;
+      animation: wiggle 2s ease-in-out infinite;
+    }
+
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(-5deg); }
+      50% { transform: rotate(5deg); }
+    }
+
+    h1 {
+      font-size: clamp(2.4rem, 8vw, 4rem);
+      color: #fff;
+      text-shadow:
+        4px 4px 0px #FF6B9D,
+        -2px -2px 0px #C77DFF;
+      letter-spacing: 1px;
+      line-height: 1.1;
+    }
+
+    .subtitle {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: clamp(1rem, 4vw, 1.3rem);
+      color: #5a4a8a;
+      background: rgba(255,255,255,0.7);
+      display: inline-block;
+      padding: 6px 20px;
+      border-radius: 30px;
+      margin-top: 12px;
+    }
+
+    /* Game cards grid */
+    .games-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 22px;
+      margin-top: 35px;
+    }
+
+    @media (min-width: 480px) {
+      .games-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    .game-card {
+      background: var(--white);
+      border-radius: 28px;
+      padding: 28px 20px 24px;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      box-shadow:
+        0 8px 0px rgba(0,0,0,0.12),
+        0 0 0 4px rgba(255,255,255,0.6);
+      transition: transform 0.15s, box-shadow 0.15s;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .game-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 8px;
+      border-radius: 28px 28px 0 0;
+    }
+
+    .card-ttt::before { background: linear-gradient(90deg, #FF6B9D, #FF9A3C); }
+
+    .game-card:active {
+      transform: translateY(4px) scale(0.97);
+      box-shadow: 0 3px 0px rgba(0,0,0,0.12), 0 0 0 4px rgba(255,255,255,0.6);
+    }
+
+    @media (hover: hover) {
+      .game-card:hover {
+        transform: translateY(-6px) scale(1.03);
+        box-shadow:
+          0 14px 0px rgba(0,0,0,0.12),
+          0 0 0 4px rgba(255,255,255,0.8);
+      }
+    }
+
+    .card-icon {
+      font-size: clamp(3.5rem, 12vw, 5rem);
+      line-height: 1;
+      filter: drop-shadow(2px 4px 4px rgba(0,0,0,0.15));
+      animation: iconFloat 3s ease-in-out infinite;
+    }
+
+    @keyframes iconFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .card-name {
+      font-size: clamp(1.4rem, 5vw, 1.8rem);
+      color: var(--dark);
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    .card-desc {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: clamp(0.85rem, 3vw, 1rem);
+      color: #888;
+      text-align: center;
+    }
+
+    .card-badge {
+      background: linear-gradient(135deg, #FF6B9D, #FF9A3C);
+      color: white;
+      font-size: 0.75rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    /* Coming soon cards */
+    .card-soon {
+      opacity: 0.65;
+      cursor: default;
+    }
+    .card-soon::after {
+      content: 'SOON! 🔜';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-15deg);
+      font-size: 1.8rem;
+      color: #aaa;
+      background: rgba(255,255,255,0.85);
+      padding: 8px 16px;
+      border-radius: 12px;
+      border: 3px dashed #ccc;
+      white-space: nowrap;
+    }
+    .card-soon:hover { transform: none; }
+
+    /* Bottom grass */
+    .grass-row {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 55px;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .grass-row svg { width: 100%; height: 100%; }
+
+    /* Bouncy animals */
+    .animal {
+      position: fixed;
+      bottom: 45px;
+      font-size: 2.5rem;
+      z-index: 2;
+      animation: animalBounce 1.5s ease-in-out infinite;
+      cursor: default;
+      user-select: none;
+    }
+    .animal-1 { left: 5%; animation-delay: 0s; }
+    .animal-2 { right: 5%; animation-delay: 0.5s; }
+
+    @keyframes animalBounce {
+      0%, 100% { transform: translateY(0) scaleX(1); }
+      50% { transform: translateY(-12px) scaleX(1); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Clouds -->
+  <div class="cloud cloud-1" style="left:-150px"></div>
+  <div class="cloud cloud-2" style="left:-110px"></div>
+  <div class="cloud cloud-3" style="left:-200px"></div>
+
+  <!-- Floating stars/emojis background -->
+  <div class="stars" id="stars"></div>
+
+  <!-- Grass floor -->
+  <div class="grass-row">
+    <svg viewBox="0 0 1440 55" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,55 L0,25 Q10,10 20,25 Q30,10 40,25 Q50,5 60,25 Q70,12 80,25 Q90,8 100,25 Q110,15 120,25 Q130,5 140,25 Q150,12 160,25 Q170,0 180,25 Q190,15 200,25 Q210,8 220,25 Q230,12 240,25 Q250,5 260,25 Q270,15 280,25 Q290,0 300,25 Q310,15 320,25 Q330,8 340,25 Q350,12 360,25 Q370,5 380,25 Q390,15 400,25 Q410,0 420,25 Q430,15 440,25 Q450,8 460,25 Q470,12 480,25 Q490,5 500,25 Q510,15 520,25 Q530,0 540,25 Q550,15 560,25 Q570,8 580,25 Q590,12 600,25 Q610,5 620,25 Q630,15 640,25 Q650,0 660,25 Q670,15 680,25 Q690,8 700,25 Q710,12 720,25 Q730,5 740,25 Q750,15 760,25 Q770,0 780,25 Q790,15 800,25 Q810,8 820,25 Q830,12 840,25 Q850,5 860,25 Q870,15 880,25 Q890,0 900,25 Q910,15 920,25 Q930,8 940,25 Q950,12 960,25 Q970,5 980,25 Q990,15 1000,25 Q1010,0 1020,25 Q1030,15 1040,25 Q1050,8 1060,25 Q1070,12 1080,25 Q1090,5 1100,25 Q1110,15 1120,25 Q1130,0 1140,25 Q1150,15 1160,25 Q1170,8 1180,25 Q1190,12 1200,25 Q1210,5 1220,25 Q1230,15 1240,25 Q1250,0 1260,25 Q1270,15 1280,25 Q1290,8 1300,25 Q1310,12 1320,25 Q1330,5 1340,25 Q1350,15 1360,25 Q1370,0 1380,25 Q1390,15 1400,25 Q1410,8 1420,25 Q1430,12 1440,25 L1440,55 Z" fill="#6BCB77"/>
+      <path d="M0,55 L0,35 Q12,22 24,35 Q36,22 48,35 Q60,22 72,35 Q84,22 96,35 Q108,25 120,35 Q132,22 144,35 Q156,22 168,35 Q180,22 192,35 Q204,25 216,35 Q228,22 240,35 Q252,22 264,35 Q276,22 288,35 Q300,22 312,35 Q324,22 336,35 Q348,22 360,35 Q372,22 384,35 Q396,22 408,35 Q420,22 432,35 Q444,22 456,35 Q468,22 480,35 Q492,22 504,35 Q516,22 528,35 Q540,22 552,35 Q564,22 576,35 Q588,22 600,35 Q612,22 624,35 Q636,22 648,35 Q660,22 672,35 Q684,22 696,35 Q708,22 720,35 Q732,22 744,35 Q756,22 768,35 Q780,22 792,35 Q804,22 816,35 Q828,22 840,35 Q852,22 864,35 Q876,22 888,35 Q900,22 912,35 Q924,22 936,35 Q948,22 960,35 Q972,22 984,35 Q996,22 1008,35 Q1020,22 1032,35 Q1044,22 1056,35 Q1068,22 1080,35 Q1092,22 1104,35 Q1116,22 1128,35 Q1140,22 1152,35 Q1164,22 1176,35 Q1188,22 1200,35 Q1212,22 1224,35 Q1236,22 1248,35 Q1260,22 1272,35 Q1284,22 1296,35 Q1308,22 1320,35 Q1332,22 1344,35 Q1356,22 1368,35 Q1380,22 1392,35 Q1404,22 1416,35 Q1428,22 1440,35 L1440,55 Z" fill="#4da860" opacity="0.7"/>
+    </svg>
+  </div>
+
+  <!-- Animals -->
+  <div class="animal animal-1">🐰</div>
+  <div class="animal animal-2">🐻</div>
+
+  <!-- Main -->
+  <div class="container">
+    <div class="title-wrap">
+      <span class="title-emoji">🎮</span>
+      <h1>Game World!</h1>
+      <div class="subtitle">✨ Pick a game to play! ✨</div>
+    </div>
+
+    <div class="games-grid">
+
+      <!-- Tic Tac Toe -->
+      <a href="tictactoe.html" class="game-card card-ttt">
+        <div class="card-icon">⭕❌</div>
+        <div class="card-name">Tic Tac Toe!</div>
+        <div class="card-desc">Two players take turns!</div>
+        <div class="card-badge">🔗 Share & Play!</div>
+      </a>
+
+      <!-- Coming soon cards -->
+      <div class="game-card card-soon">
+        <div class="card-icon">🔢</div>
+        <div class="card-name">Number Fun</div>
+        <div class="card-desc">Count & learn!</div>
+      </div>
+
+      <div class="game-card card-soon">
+        <div class="card-icon">🎨</div>
+        <div class="card-name">Drawing Time</div>
+        <div class="card-desc">Draw anything!</div>
+      </div>
+
+      <div class="game-card card-soon">
+        <div class="card-icon">🔤</div>
+        <div class="card-name">ABC Phonics</div>
+        <div class="card-desc">Learn letters!</div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Sprinkle floating emoji stars
+    const emojis = ['⭐','🌟','✨','💫','🌈','🎈','🎀','🍭','🌸','🦋','🌙','☀️'];
+    const starsEl = document.getElementById('stars');
+    for (let i = 0; i < 18; i++) {
+      const s = document.createElement('div');
+      s.className = 'star';
+      s.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      s.style.left = Math.random() * 95 + 'vw';
+      s.style.top = Math.random() * 80 + 'vh';
+      s.style.animationDelay = (Math.random() * 3) + 's';
+      s.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+      s.style.fontSize = (1 + Math.random() * 1.5) + 'rem';
+      starsEl.appendChild(s);
+    }
+  </script>
+</body>
+</html>
