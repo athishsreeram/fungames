@@ -1,356 +1,1080 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>🎮 Toddler Game World!</title>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎮 Game World!</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
 
-    :root {
-      --sky: #74d7f7;
-      --sun: #FFD93D;
-      --grass: #6BCB77;
-      --pink: #FF6B9D;
-      --purple: #C77DFF;
-      --orange: #FF9A3C;
-      --white: #FFFDF0;
-      --dark: #2D2D2D;
-    }
+  :root {
+    --bg: #fff9f0;
+    --card-radius: 24px;
+    --shadow: 0 8px 32px rgba(0,0,0,0.10);
+    --toddler: #ff6b6b;
+    --trending: #4ecdc4;
+    --kids: #ffe66d;
+    --accent: #a29bfe;
+  }
 
-    body {
-      font-family: 'Fredoka One', cursive;
-      background: linear-gradient(180deg, #74d7f7 0%, #a8edff 40%, #d4f5d4 100%);
-      min-height: 100vh;
-      overflow-x: hidden;
-      position: relative;
-    }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* Floating clouds */
-    .cloud {
-      position: fixed;
-      background: white;
-      border-radius: 50px;
-      opacity: 0.85;
-      animation: floatCloud linear infinite;
-      z-index: 0;
-    }
-    .cloud::before, .cloud::after {
-      content: '';
-      position: absolute;
-      background: white;
-      border-radius: 50%;
-    }
-    .cloud-1 { width: 120px; height: 40px; top: 8%; animation-duration: 25s; animation-delay: 0s; }
-    .cloud-1::before { width: 60px; height: 60px; top: -30px; left: 20px; }
-    .cloud-1::after { width: 45px; height: 45px; top: -20px; left: 55px; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    padding-bottom: 48px;
+  }
 
-    .cloud-2 { width: 90px; height: 30px; top: 18%; animation-duration: 35s; animation-delay: -10s; }
-    .cloud-2::before { width: 45px; height: 45px; top: -22px; left: 15px; }
-    .cloud-2::after { width: 35px; height: 35px; top: -15px; left: 42px; }
+  /* ── HEADER ── */
+  header {
+    text-align: center;
+    padding: 36px 16px 20px;
+    background: linear-gradient(135deg, #ff6b6b 0%, #feca57 60%, #48dbfb 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.12'%3E%3Ccircle cx='30' cy='30' r='10'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  header .mascots {
+    font-size: 2.8rem;
+    letter-spacing: 8px;
+    position: relative;
+    animation: bounce 2s ease-in-out infinite;
+  }
+  @keyframes bounce {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  header h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2.2rem, 6vw, 3.5rem);
+    color: #fff;
+    text-shadow: 3px 4px 0 rgba(0,0,0,0.18);
+    position: relative;
+    margin-top: 8px;
+  }
+  header p {
+    color: rgba(255,255,255,0.92);
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-top: 4px;
+    position: relative;
+  }
 
-    .cloud-3 { width: 150px; height: 50px; top: 5%; animation-duration: 45s; animation-delay: -20s; }
-    .cloud-3::before { width: 70px; height: 70px; top: -35px; left: 25px; }
-    .cloud-3::after { width: 55px; height: 55px; top: -28px; left: 75px; }
+  /* ── FILTER BAR ── */
+  .filter-bar {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 24px 16px 8px;
+  }
+  .filter-btn {
+    border: none;
+    border-radius: 100px;
+    padding: 10px 22px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.12);
+  }
+  .filter-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.12); }
+  .filter-btn.all    { background: #fff; color: #333; border: 2.5px solid #ddd; }
+  .filter-btn.toddler  { background: var(--toddler); color: #fff; }
+  .filter-btn.trending { background: var(--trending); color: #fff; }
+  .filter-btn.kids     { background: #f9ca24; color: #333; }
+  .filter-btn.active   { transform: scale(1.08); box-shadow: 0 6px 0 rgba(0,0,0,0.15); }
+  .filter-btn.inactive { opacity: 0.45; }
 
-    @keyframes floatCloud {
-      from { transform: translateX(-250px); }
-      to { transform: translateX(110vw); }
-    }
+  /* ── GRID ── */
+  .game-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+    max-width: 1100px;
+    margin: 20px auto 0;
+    padding: 0 20px;
+  }
 
-    /* Stars */
-    .stars {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      pointer-events: none;
-      z-index: 0;
-    }
-    .star {
-      position: absolute;
-      font-size: 1.5rem;
-      animation: twinkle 2s ease-in-out infinite alternate;
-    }
-    @keyframes twinkle {
-      from { opacity: 0.3; transform: scale(0.8); }
-      to { opacity: 1; transform: scale(1.2); }
-    }
+  /* ── CARD ── */
+  .game-card {
+    background: #fff;
+    border-radius: var(--card-radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    animation: popIn 0.4s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  .game-card:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 16px 40px rgba(0,0,0,0.14); }
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.82) translateY(16px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
 
-    /* Main content */
-    .container {
-      position: relative;
-      z-index: 10;
-      max-width: 700px;
-      margin: 0 auto;
-      padding: 30px 20px 60px;
-      text-align: center;
-    }
+  .card-thumb {
+    height: 130px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4.5rem;
+    position: relative;
+  }
+  .card-thumb.toddler-bg  { background: linear-gradient(135deg, #ff6b6b22 0%, #feca5733 100%); }
+  .card-thumb.trending-bg { background: linear-gradient(135deg, #4ecdc422 0%, #45b7d133 100%); }
+  .card-thumb.kids-bg     { background: linear-gradient(135deg, #ffe66d33 0%, #f9ca2433 100%); }
 
-    .title-wrap {
-      margin-bottom: 10px;
-      animation: bounceIn 0.8s cubic-bezier(0.36, 0.07, 0.19, 0.97);
-    }
+  .badge {
+    position: absolute;
+    top: 12px; right: 12px;
+    border-radius: 100px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 4px 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge.toddler  { background: var(--toddler); color: #fff; }
+  .badge.trending { background: var(--trending); color: #fff; }
+  .badge.kids     { background: #f9ca24; color: #333; }
 
-    @keyframes bounceIn {
-      0% { transform: scale(0.3) rotate(-5deg); opacity: 0; }
-      50% { transform: scale(1.08) rotate(2deg); }
-      70% { transform: scale(0.95) rotate(-1deg); }
-      100% { transform: scale(1) rotate(0deg); opacity: 1; }
-    }
+  .card-body { padding: 16px 18px 20px; flex: 1; display: flex; flex-direction: column; }
+  .card-body h3 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.25rem;
+    color: #2d2d2d;
+    margin-bottom: 4px;
+  }
+  .card-body p {
+    font-size: 0.88rem;
+    color: #777;
+    line-height: 1.4;
+    flex: 1;
+  }
+  .card-play-btn {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 9px 20px;
+    border-radius: 100px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.12s;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+    text-align: center;
+  }
+  .card-play-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.12); }
+  .card-play-btn.toddler  { background: var(--toddler); color: #fff; }
+  .card-play-btn.trending { background: var(--trending); color: #fff; }
+  .card-play-btn.kids     { background: #f9ca24; color: #333; }
 
-    .title-emoji {
-      font-size: clamp(3rem, 10vw, 5rem);
-      display: block;
-      margin-bottom: -10px;
-      animation: wiggle 2s ease-in-out infinite;
-    }
+  /* ── MODAL OVERLAY ── */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: 28px;
+    max-width: 520px;
+    width: 100%;
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.3);
+    animation: slideUp 0.3s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(40px) scale(0.95); }
+    to   { opacity: 1; transform: none; }
+  }
+  .modal-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 24px 16px;
+    border-bottom: 2px solid #f0f0f0;
+  }
+  .modal-emoji { font-size: 2.4rem; }
+  .modal-title { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: #2d2d2d; }
+  .modal-close {
+    margin-left: auto;
+    background: #f0f0f0;
+    border: none;
+    border-radius: 50%;
+    width: 36px; height: 36px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .modal-body { padding: 20px 24px 24px; }
+  .modal-game-area {
+    background: #f9f9f9;
+    border-radius: 18px;
+    min-height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    overflow: hidden;
+    position: relative;
+  }
+  .parent-tip {
+    background: #fff9e6;
+    border-left: 4px solid #feca57;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 0.88rem;
+    color: #666;
+    margin-top: 12px;
+  }
+  .parent-tip strong { color: #e67e22; display: block; margin-bottom: 4px; }
 
-    @keyframes wiggle {
-      0%, 100% { transform: rotate(-5deg); }
-      50% { transform: rotate(5deg); }
-    }
+  /* ── INDIVIDUAL GAME STYLES ── */
 
-    h1 {
-      font-size: clamp(2.4rem, 8vw, 4rem);
-      color: #fff;
-      text-shadow:
-        4px 4px 0px #FF6B9D,
-        -2px -2px 0px #C77DFF;
-      letter-spacing: 1px;
-      line-height: 1.1;
-    }
+  /* COLOR HUNT */
+  #colorHuntGame { width: 100%; padding: 16px; }
+  #colorHuntGame .target-label {
+    text-align: center;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.3rem;
+    margin-bottom: 14px;
+    color: #444;
+  }
+  #colorHuntGame .color-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  #colorHuntGame .color-dot {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 4px solid transparent;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  }
+  #colorHuntGame .color-dot:hover { transform: scale(1.12); }
+  #colorHuntGame .score-bar {
+    text-align: center;
+    margin-top: 14px;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: #444;
+  }
 
-    .subtitle {
-      font-family: 'Nunito', sans-serif;
-      font-weight: 800;
-      font-size: clamp(1rem, 4vw, 1.3rem);
-      color: #5a4a8a;
-      background: rgba(255,255,255,0.7);
-      display: inline-block;
-      padding: 6px 20px;
-      border-radius: 30px;
-      margin-top: 12px;
-    }
+  /* QUIET BOX */
+  #quietGame { width: 100%; min-height: 220px; position: relative; overflow: hidden; }
+  .bubble {
+    position: absolute;
+    border-radius: 50%;
+    cursor: pointer;
+    animation: floatUp linear forwards;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem;
+    border: 3px solid rgba(255,255,255,0.5);
+  }
+  @keyframes floatUp {
+    from { transform: translateY(0) scale(1); opacity: 1; }
+    to   { transform: translateY(-280px) scale(0.7); opacity: 0; }
+  }
+  .bubble:active { transform: scale(1.3); }
 
-    /* Game cards grid */
-    .games-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 22px;
-      margin-top: 35px;
-    }
+  /* TAP TO STACK */
+  #stackGame canvas { display: block; margin: 0 auto; border-radius: 12px; }
+  #stackScore { text-align: center; font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: #444; margin-bottom: 8px; }
 
-    @media (min-width: 480px) {
-      .games-grid { grid-template-columns: 1fr 1fr; }
-    }
+  /* REACTION CLICK */
+  #reactionGame {
+    width: 100%; min-height: 220px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 16px;
+  }
+  #reactionScreen {
+    width: 100%; height: 160px;
+    border-radius: 16px;
+    background: #eee;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.1s;
+    user-select: none;
+  }
+  #reactionResult { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: #444; min-height: 28px; }
 
-    .game-card {
-      background: var(--white);
-      border-radius: 28px;
-      padding: 28px 20px 24px;
-      text-decoration: none;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-      box-shadow:
-        0 8px 0px rgba(0,0,0,0.12),
-        0 0 0 4px rgba(255,255,255,0.6);
-      transition: transform 0.15s, box-shadow 0.15s;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-    }
+  /* ANIMAL MATCH */
+  #animalGame { width: 100%; padding: 12px; }
+  .animal-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; justify-content: center; }
+  .animal-card {
+    width: 70px; height: 70px;
+    border-radius: 16px;
+    background: #f0f0f0;
+    border: 3px dashed #ccc;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.2rem;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s;
+  }
+  .animal-card.correct  { background: #d4edda; border-color: #28a745; }
+  .animal-card.wrong    { background: #f8d7da; border-color: #dc3545; animation: shake 0.4s; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20%,60% { transform: translateX(-6px); }
+    40%,80% { transform: translateX(6px); }
+  }
+  .animal-card:hover { transform: scale(1.1); }
+  .animal-target {
+    width: 80px; height: 80px;
+    border-radius: 16px;
+    background: #fff3cd;
+    border: 3px solid #ffc107;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.6rem;
+    flex-shrink: 0;
+  }
+  .animal-prompt { font-family: 'Fredoka One', cursive; font-size: 1.15rem; color: #555; text-align: center; margin-bottom: 10px; }
 
-    .game-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 8px;
-      border-radius: 28px 28px 0 0;
-    }
+  /* SHAPE SORTER */
+  #shapeGame { width: 100%; padding: 10px; text-align: center; }
+  .shape-target-row { display: flex; gap: 14px; justify-content: center; margin-bottom: 16px; }
+  .shape-slot {
+    width: 72px; height: 72px;
+    border: 3.5px dashed #ccc;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem;
+    transition: border-color 0.2s, background 0.2s;
+    background: #fafafa;
+    cursor: pointer;
+  }
+  .shape-slot.filled { border-color: #28a745; background: #d4edda; }
+  .shape-choices { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .shape-piece {
+    width: 66px; height: 66px;
+    border-radius: 14px;
+    background: #f0f0f0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: transform 0.15s;
+  }
+  .shape-piece:hover { transform: scale(1.12); border-color: #a29bfe; }
+  .shape-piece.used { opacity: 0.3; pointer-events: none; }
+  #shapePrompt { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: #555; margin-bottom: 10px; }
 
-    .card-ttt::before { background: linear-gradient(90deg, #FF6B9D, #FF9A3C); }
+  /* SPEED TYPING */
+  #typingGame { width: 100%; padding: 12px; }
+  #typingWord {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    text-align: center;
+    color: #2d2d2d;
+    letter-spacing: 8px;
+    margin-bottom: 10px;
+    background: #f0f0f0;
+    border-radius: 12px;
+    padding: 12px;
+  }
+  #typingInput {
+    width: 100%;
+    border: 3px solid #ddd;
+    border-radius: 12px;
+    font-size: 1.2rem;
+    padding: 10px 14px;
+    font-family: 'Nunito', sans-serif;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  #typingInput:focus { border-color: #4ecdc4; }
+  #typingScore { text-align: center; margin-top: 8px; font-weight: 800; color: #444; }
+  #typingProgress {
+    height: 8px;
+    background: #eee;
+    border-radius: 100px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  #typingBar { height: 100%; background: #4ecdc4; border-radius: 100px; transition: width 0.1s linear; width: 100%; }
 
-    .game-card:active {
-      transform: translateY(4px) scale(0.97);
-      box-shadow: 0 3px 0px rgba(0,0,0,0.12), 0 0 0 4px rgba(255,255,255,0.6);
-    }
+  /* ── SECTION HEADERS ── */
+  .section-header {
+    max-width: 1100px;
+    margin: 32px auto 0;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-header h2 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+    color: #2d2d2d;
+  }
+  .section-header .section-line { flex: 1; height: 2px; background: #f0f0f0; }
 
-    @media (hover: hover) {
-      .game-card:hover {
-        transform: translateY(-6px) scale(1.03);
-        box-shadow:
-          0 14px 0px rgba(0,0,0,0.12),
-          0 0 0 4px rgba(255,255,255,0.8);
-      }
-    }
+  /* ── EMPTY STATE ── */
+  #emptyState {
+    display: none;
+    text-align: center;
+    padding: 48px 16px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.3rem;
+    color: #bbb;
+  }
 
-    .card-icon {
-      font-size: clamp(3.5rem, 12vw, 5rem);
-      line-height: 1;
-      filter: drop-shadow(2px 4px 4px rgba(0,0,0,0.15));
-      animation: iconFloat 3s ease-in-out infinite;
-    }
-
-    @keyframes iconFloat {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-8px); }
-    }
-
-    .card-name {
-      font-size: clamp(1.4rem, 5vw, 1.8rem);
-      color: var(--dark);
-      text-align: center;
-      line-height: 1.2;
-    }
-
-    .card-desc {
-      font-family: 'Nunito', sans-serif;
-      font-weight: 700;
-      font-size: clamp(0.85rem, 3vw, 1rem);
-      color: #888;
-      text-align: center;
-    }
-
-    .card-badge {
-      background: linear-gradient(135deg, #FF6B9D, #FF9A3C);
-      color: white;
-      font-size: 0.75rem;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-family: 'Nunito', sans-serif;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-    }
-
-    /* Coming soon cards */
-    .card-soon {
-      opacity: 0.65;
-      cursor: default;
-    }
-    .card-soon::after {
-      content: 'SOON! 🔜';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) rotate(-15deg);
-      font-size: 1.8rem;
-      color: #aaa;
-      background: rgba(255,255,255,0.85);
-      padding: 8px 16px;
-      border-radius: 12px;
-      border: 3px dashed #ccc;
-      white-space: nowrap;
-    }
-    .card-soon:hover { transform: none; }
-
-    /* Bottom grass */
-    .grass-row {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      height: 55px;
-      z-index: 1;
-      pointer-events: none;
-    }
-    .grass-row svg { width: 100%; height: 100%; }
-
-    /* Bouncy animals */
-    .animal {
-      position: fixed;
-      bottom: 45px;
-      font-size: 2.5rem;
-      z-index: 2;
-      animation: animalBounce 1.5s ease-in-out infinite;
-      cursor: default;
-      user-select: none;
-    }
-    .animal-1 { left: 5%; animation-delay: 0s; }
-    .animal-2 { right: 5%; animation-delay: 0.5s; }
-
-    @keyframes animalBounce {
-      0%, 100% { transform: translateY(0) scaleX(1); }
-      50% { transform: translateY(-12px) scaleX(1); }
-    }
-  </style>
+  /* ── RESPONSIVE ── */
+  @media (max-width: 500px) {
+    .game-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 12px; }
+    .card-thumb { height: 100px; font-size: 3.5rem; }
+    .modal-body { padding: 16px; }
+  }
+</style>
 </head>
 <body>
 
-  <!-- Clouds -->
-  <div class="cloud cloud-1" style="left:-150px"></div>
-  <div class="cloud cloud-2" style="left:-110px"></div>
-  <div class="cloud cloud-3" style="left:-200px"></div>
+<header>
+  <div class="mascots">🐰 🐻 🎮 🦄 🐸</div>
+  <h1>Game World!</h1>
+  <p>✨ Pick a game to play! ✨</p>
+</header>
 
-  <!-- Floating stars/emojis background -->
-  <div class="stars" id="stars"></div>
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <button class="filter-btn all active" onclick="filter('all')">🎮 All Games</button>
+  <button class="filter-btn toddler" onclick="filter('toddler')">👶 Toddler (1–4)</button>
+  <button class="filter-btn kids" onclick="filter('kids')">🧒 Kids (5+)</button>
+  <button class="filter-btn trending" onclick="filter('trending')">🔥 Trending</button>
+</div>
 
-  <!-- Grass floor -->
-  <div class="grass-row">
-    <svg viewBox="0 0 1440 55" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M0,55 L0,25 Q10,10 20,25 Q30,10 40,25 Q50,5 60,25 Q70,12 80,25 Q90,8 100,25 Q110,15 120,25 Q130,5 140,25 Q150,12 160,25 Q170,0 180,25 Q190,15 200,25 Q210,8 220,25 Q230,12 240,25 Q250,5 260,25 Q270,15 280,25 Q290,0 300,25 Q310,15 320,25 Q330,8 340,25 Q350,12 360,25 Q370,5 380,25 Q390,15 400,25 Q410,0 420,25 Q430,15 440,25 Q450,8 460,25 Q470,12 480,25 Q490,5 500,25 Q510,15 520,25 Q530,0 540,25 Q550,15 560,25 Q570,8 580,25 Q590,12 600,25 Q610,5 620,25 Q630,15 640,25 Q650,0 660,25 Q670,15 680,25 Q690,8 700,25 Q710,12 720,25 Q730,5 740,25 Q750,15 760,25 Q770,0 780,25 Q790,15 800,25 Q810,8 820,25 Q830,12 840,25 Q850,5 860,25 Q870,15 880,25 Q890,0 900,25 Q910,15 920,25 Q930,8 940,25 Q950,12 960,25 Q970,5 980,25 Q990,15 1000,25 Q1010,0 1020,25 Q1030,15 1040,25 Q1050,8 1060,25 Q1070,12 1080,25 Q1090,5 1100,25 Q1110,15 1120,25 Q1130,0 1140,25 Q1150,15 1160,25 Q1170,8 1180,25 Q1190,12 1200,25 Q1210,5 1220,25 Q1230,15 1240,25 Q1250,0 1260,25 Q1270,15 1280,25 Q1290,8 1300,25 Q1310,12 1320,25 Q1330,5 1340,25 Q1350,15 1360,25 Q1370,0 1380,25 Q1390,15 1400,25 Q1410,8 1420,25 Q1430,12 1440,25 L1440,55 Z" fill="#6BCB77"/>
-      <path d="M0,55 L0,35 Q12,22 24,35 Q36,22 48,35 Q60,22 72,35 Q84,22 96,35 Q108,25 120,35 Q132,22 144,35 Q156,22 168,35 Q180,22 192,35 Q204,25 216,35 Q228,22 240,35 Q252,22 264,35 Q276,22 288,35 Q300,22 312,35 Q324,22 336,35 Q348,22 360,35 Q372,22 384,35 Q396,22 408,35 Q420,22 432,35 Q444,22 456,35 Q468,22 480,35 Q492,22 504,35 Q516,22 528,35 Q540,22 552,35 Q564,22 576,35 Q588,22 600,35 Q612,22 624,35 Q636,22 648,35 Q660,22 672,35 Q684,22 696,35 Q708,22 720,35 Q732,22 744,35 Q756,22 768,35 Q780,22 792,35 Q804,22 816,35 Q828,22 840,35 Q852,22 864,35 Q876,22 888,35 Q900,22 912,35 Q924,22 936,35 Q948,22 960,35 Q972,22 984,35 Q996,22 1008,35 Q1020,22 1032,35 Q1044,22 1056,35 Q1068,22 1080,35 Q1092,22 1104,35 Q1116,22 1128,35 Q1140,22 1152,35 Q1164,22 1176,35 Q1188,22 1200,35 Q1212,22 1224,35 Q1236,22 1248,35 Q1260,22 1272,35 Q1284,22 1296,35 Q1308,22 1320,35 Q1332,22 1344,35 Q1356,22 1368,35 Q1380,22 1392,35 Q1404,22 1416,35 Q1428,22 1440,35 L1440,55 Z" fill="#4da860" opacity="0.7"/>
-    </svg>
-  </div>
+<!-- TODDLER SECTION -->
+<div class="section-header" data-section="toddler">
+  <h2>👶 Toddler Games</h2>
+  <div class="section-line"></div>
+</div>
+<div class="game-grid" id="grid">
 
-  <!-- Animals -->
-  <div class="animal animal-1">🐰</div>
-  <div class="animal animal-2">🐻</div>
-
-  <!-- Main -->
-  <div class="container">
-    <div class="title-wrap">
-      <span class="title-emoji">🎮</span>
-      <h1>Game World!</h1>
-      <div class="subtitle">✨ Pick a game to play! ✨</div>
+  <div class="game-card" data-cat="toddler" onclick="openGame('colorHunt')">
+    <div class="card-thumb toddler-bg">
+      🎨
+      <span class="badge toddler">👶 Toddler</span>
     </div>
-
-    <div class="games-grid">
-
-      <!-- Tic Tac Toe -->
-      <a href="tictactoe.html" class="game-card card-ttt">
-        <div class="card-icon">⭕❌</div>
-        <div class="card-name">Tic Tac Toe!</div>
-        <div class="card-desc">Two players take turns!</div>
-        <div class="card-badge">🔗 Share & Play!</div>
-      </a>
-
-      <!-- Coming soon cards -->
-      <div class="game-card card-soon">
-        <div class="card-icon">🔢</div>
-        <div class="card-name">Number Fun</div>
-        <div class="card-desc">Count & learn!</div>
-      </div>
-
-      <div class="game-card card-soon">
-        <div class="card-icon">🎨</div>
-        <div class="card-name">Drawing Time</div>
-        <div class="card-desc">Draw anything!</div>
-      </div>
-
-      <div class="game-card card-soon">
-        <div class="card-icon">🔤</div>
-        <div class="card-name">ABC Phonics</div>
-        <div class="card-desc">Learn letters!</div>
-      </div>
-
+    <div class="card-body">
+      <h3>Color Hunt</h3>
+      <p>Tap all the dots that match the target color! No timers, just fun.</p>
+      <button class="card-play-btn toddler">▶ Play</button>
     </div>
   </div>
 
-  <script>
-    // Sprinkle floating emoji stars
-    const emojis = ['⭐','🌟','✨','💫','🌈','🎈','🎀','🍭','🌸','🦋','🌙','☀️'];
-    const starsEl = document.getElementById('stars');
-    for (let i = 0; i < 18; i++) {
-      const s = document.createElement('div');
-      s.className = 'star';
-      s.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-      s.style.left = Math.random() * 95 + 'vw';
-      s.style.top = Math.random() * 80 + 'vh';
-      s.style.animationDelay = (Math.random() * 3) + 's';
-      s.style.animationDuration = (1.5 + Math.random() * 2) + 's';
-      s.style.fontSize = (1 + Math.random() * 1.5) + 'rem';
-      starsEl.appendChild(s);
+  <div class="game-card" data-cat="toddler" onclick="openGame('quietBox')">
+    <div class="card-thumb toddler-bg">
+      🫧
+      <span class="badge toddler">👶 Toddler</span>
+    </div>
+    <div class="card-body">
+      <h3>Quiet Box</h3>
+      <p>Pop floating bubbles and tap falling stars. Calming & gentle.</p>
+      <button class="card-play-btn toddler">▶ Play</button>
+    </div>
+  </div>
+
+  <div class="game-card" data-cat="toddler" onclick="openGame('animalMatch')">
+    <div class="card-thumb toddler-bg">
+      🐾
+      <span class="badge toddler">👶 Toddler</span>
+    </div>
+    <div class="card-body">
+      <h3>Animal Match Up</h3>
+      <p>Tap the animal that matches what you see! Great for learning.</p>
+      <button class="card-play-btn toddler">▶ Play</button>
+    </div>
+  </div>
+
+  <div class="game-card" data-cat="toddler" onclick="openGame('shapeSorter')">
+    <div class="card-thumb toddler-bg">
+      🔷
+      <span class="badge toddler">👶 Toddler</span>
+    </div>
+    <div class="card-body">
+      <h3>Shape Sorter</h3>
+      <p>Drag each shape into its matching spot. Simple and satisfying!</p>
+      <button class="card-play-btn toddler">▶ Play</button>
+    </div>
+  </div>
+
+  <!-- EXISTING: ABC PHONICS & DRAWING as kids -->
+  <div class="game-card" data-cat="kids" onclick="window.location='https://athishsreeram.github.io/fungames/abc.html'">
+    <div class="card-thumb kids-bg">
+      🔤
+      <span class="badge kids">🧒 Kids</span>
+    </div>
+    <div class="card-body">
+      <h3>ABC Phonics</h3>
+      <p>Learn letters and sounds through fun phonics play!</p>
+      <button class="card-play-btn kids">▶ Play</button>
+    </div>
+  </div>
+
+  <div class="game-card" data-cat="kids" onclick="window.location='https://athishsreeram.github.io/fungames/drawing.html'">
+    <div class="card-thumb kids-bg">
+      🎨
+      <span class="badge kids">🧒 Kids</span>
+    </div>
+    <div class="card-body">
+      <h3>Drawing Time</h3>
+      <p>Draw anything you can imagine on a virtual canvas!</p>
+      <button class="card-play-btn kids">▶ Play</button>
+    </div>
+  </div>
+
+  <!-- EXISTING: Number Fun, Tic Tac Toe -->
+  <div class="game-card" data-cat="kids" onclick="window.location='https://athishsreeram.github.io/fungames/numbers.html'">
+    <div class="card-thumb kids-bg">
+      🔢
+      <span class="badge kids">🧒 Kids</span>
+    </div>
+    <div class="card-body">
+      <h3>Number Fun</h3>
+      <p>Count, learn numbers, and practice maths in a fun way!</p>
+      <button class="card-play-btn kids">▶ Play</button>
+    </div>
+  </div>
+
+  <div class="game-card" data-cat="kids" onclick="window.location='https://athishsreeram.github.io/fungames/tictactoe.html'">
+    <div class="card-thumb kids-bg">
+      ⭕
+      <span class="badge kids">🧒 Kids</span>
+    </div>
+    <div class="card-body">
+      <h3>Tic Tac Toe!</h3>
+      <p>Two players take turns. X's and O's, who will win?</p>
+      <button class="card-play-btn kids">▶ Play</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- TRENDING SECTION -->
+<div class="section-header" data-section="trending">
+  <h2>🔥 Trending Games</h2>
+  <div class="section-line"></div>
+</div>
+<div class="game-grid" id="trendingGrid">
+
+  <div class="game-card" data-cat="trending" onclick="openGame('tapStack')">
+    <div class="card-thumb trending-bg">
+      🏗️
+      <span class="badge trending">🔥 Trending</span>
+    </div>
+    <div class="card-body">
+      <h3>Tap to Stack</h3>
+      <p>Tap at the perfect moment to stack blocks. How high can you go?</p>
+      <button class="card-play-btn trending">▶ Play</button>
+    </div>
+  </div>
+
+  <div class="game-card" data-cat="trending" onclick="openGame('reactionClick')">
+    <div class="card-thumb trending-bg">
+      ⚡
+      <span class="badge trending">🔥 Trending</span>
+    </div>
+    <div class="card-body">
+      <h3>Reaction Click</h3>
+      <p>Click the moment the screen changes! Test your reaction speed.</p>
+      <button class="card-play-btn trending">▶ Play</button>
+    </div>
+  </div>
+
+  <div class="game-card" data-cat="trending" onclick="openGame('speedTyping')">
+    <div class="card-thumb trending-bg">
+      ⌨️
+      <span class="badge trending">🔥 Trending</span>
+    </div>
+    <div class="card-body">
+      <h3>Speed Typing</h3>
+      <p>Type the word before time runs out! Great for older kids too.</p>
+      <button class="card-play-btn trending">▶ Play</button>
+    </div>
+  </div>
+
+</div>
+
+<div id="emptyState">🙈 No games found for that filter!</div>
+
+<!-- ═══════════ MODAL ═══════════ -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <span class="modal-emoji" id="modalEmoji"></span>
+      <span class="modal-title" id="modalTitle"></span>
+      <button class="modal-close" onclick="closeGame()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-game-area" id="modalGameArea"></div>
+      <div class="parent-tip" id="parentTip" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── FILTER ──────────────────────────────────────────────
+let activeFilter = 'all';
+
+function filter(cat) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.toggle('active', b.classList.contains(cat) || (cat === 'all' && b.classList.contains('all')));
+    b.classList.toggle('inactive', !b.classList.contains('active'));
+  });
+
+  const cards = document.querySelectorAll('.game-card');
+  let visible = 0;
+  cards.forEach(c => {
+    const show = cat === 'all' || c.dataset.cat === cat;
+    c.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+
+  document.querySelectorAll('.section-header').forEach(sh => {
+    if (cat === 'all') { sh.style.display = ''; return; }
+    sh.style.display = sh.dataset.section === cat ? '' : 'none';
+  });
+
+  document.getElementById('emptyState').style.display = visible === 0 ? 'block' : 'none';
+}
+
+// ── MODAL ────────────────────────────────────────────────
+const games = {
+  colorHunt:    { emoji:'🎨', title:'Color Hunt',      cat:'toddler' },
+  quietBox:     { emoji:'🫧', title:'Quiet Box',       cat:'toddler' },
+  animalMatch:  { emoji:'🐾', title:'Animal Match Up', cat:'toddler' },
+  shapeSorter:  { emoji:'🔷', title:'Shape Sorter',    cat:'toddler' },
+  tapStack:     { emoji:'🏗️', title:'Tap to Stack',    cat:'trending' },
+  reactionClick:{ emoji:'⚡', title:'Reaction Click',  cat:'trending' },
+  speedTyping:  { emoji:'⌨️', title:'Speed Typing',    cat:'trending' },
+};
+
+let activeGame = null;
+
+function openGame(id) {
+  const g = games[id];
+  document.getElementById('modalEmoji').textContent  = g.emoji;
+  document.getElementById('modalTitle').textContent  = g.title;
+  document.getElementById('modalOverlay').classList.add('open');
+  const area = document.getElementById('modalGameArea');
+  area.innerHTML = '';
+  document.getElementById('parentTip').style.display = 'none';
+  activeGame = id;
+  initGame(id, area);
+}
+
+function closeGame() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  stopGame(activeGame);
+  activeGame = null;
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeGame();
+}
+
+// ── GAME INIT / STOP ─────────────────────────────────────
+let gameTimers = [];
+function clearTimers() { gameTimers.forEach(clearInterval); gameTimers = []; }
+function stopGame(id) { clearTimers(); }
+
+function initGame(id, area) {
+  switch(id) {
+    case 'colorHunt':    initColorHunt(area); break;
+    case 'quietBox':     initQuietBox(area);  break;
+    case 'animalMatch':  initAnimalMatch(area); break;
+    case 'shapeSorter':  initShapeSorter(area); break;
+    case 'tapStack':     initTapStack(area); break;
+    case 'reactionClick':initReaction(area); break;
+    case 'speedTyping':  initTyping(area);   break;
+  }
+}
+
+// ────────────────────────────────────────────────────────
+// 1. COLOR HUNT
+// ────────────────────────────────────────────────────────
+function initColorHunt(area) {
+  const colors = ['#ff6b6b','#4ecdc4','#ffe66d','#a29bfe','#fd79a8','#55efc4','#e17055','#74b9ff'];
+  const colorNames = ['Red','Teal','Yellow','Purple','Pink','Mint','Orange','Blue'];
+  let score = 0, target = 0;
+  
+  function pick() { target = Math.floor(Math.random() * colors.length); render(); }
+  
+  function render() {
+    const dots = Array.from({length: 12}, () => Math.floor(Math.random() * colors.length));
+    dots[Math.floor(Math.random() * 12)] = target; // guarantee at least one
+    
+    area.innerHTML = `<div id="colorHuntGame">
+      <div class="target-label">🎯 Tap all the <span style="color:${colors[target]};font-weight:900">${colorNames[target]}</span> dots!</div>
+      <div class="color-grid">${dots.map((ci,i) =>
+        `<div class="color-dot" data-ci="${ci}" data-i="${i}" style="background:${colors[ci]}" onclick="chTap(this,${ci},${target})"></div>`
+      ).join('')}</div>
+      <div class="score-bar">⭐ Score: <span id="chScore">${score}</span></div>
+    </div>`;
+    
+    showParentTip('toddler','🌈 <strong>Parent Tip:</strong> In the real world, play "Color Hunt" at home — "Find something red in the room!"');
+  }
+  pick();
+}
+window.chTap = function(el, ci, target) {
+  if (ci === target) {
+    el.style.transform = 'scale(1.25)';
+    el.style.borderColor = '#28a745';
+    el.style.opacity = '0.5';
+    el.onclick = null;
+    const s = document.getElementById('chScore');
+    if (s) s.textContent = parseInt(s.textContent) + 1;
+    playTone(660, 0.08);
+    // check if all correct are found
+    const remaining = document.querySelectorAll(`.color-dot[data-ci="${target}"]`);
+    const alive = Array.from(remaining).filter(d => d.onclick !== null);
+    if (alive.length === 0) setTimeout(() => initColorHunt(area), 800);
+  } else {
+    el.style.borderColor = '#dc3545';
+    el.style.animation = 'shake 0.4s';
+    playTone(200, 0.05);
+    setTimeout(() => { el.style.borderColor = 'transparent'; el.style.animation = ''; }, 500);
+  }
+};
+
+// ────────────────────────────────────────────────────────
+// 2. QUIET BOX
+// ────────────────────────────────────────────────────────
+function initQuietBox(area) {
+  const emojis = ['🫧','⭐','🌸','✨','🌟','💜','💙','🩵'];
+  area.innerHTML = `<div id="quietGame"></div>`;
+  const el = area.querySelector('#quietGame');
+  showParentTip('toddler','🌙 <strong>Parent Tip:</strong> Great for winding down! Inspired by quiet time activities from "10 Quiet Toddler Games".');
+  
+  let count = 0;
+  function spawnBubble() {
+    if (!document.getElementById('quietGame')) return;
+    const b = document.createElement('div');
+    const size = 50 + Math.random() * 40;
+    const hue = Math.floor(Math.random() * 360);
+    b.className = 'bubble';
+    b.style.cssText = `width:${size}px;height:${size}px;
+      background:hsla(${hue},70%,75%,0.7);
+      left:${Math.random() * (el.offsetWidth - size)}px;
+      bottom:0;
+      animation-duration:${3+Math.random()*3}s;`;
+    b.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    b.onclick = () => { b.style.transform='scale(1.8)'; b.style.opacity='0'; playTone(528,0.05); setTimeout(()=>b.remove(),200); };
+    el.appendChild(b);
+    b.addEventListener('animationend', () => b.remove());
+  }
+  gameTimers.push(setInterval(spawnBubble, 900));
+  spawnBubble(); spawnBubble();
+}
+
+// ────────────────────────────────────────────────────────
+// 3. ANIMAL MATCH
+// ────────────────────────────────────────────────────────
+function initAnimalMatch(area) {
+  const animals = [
+    {e:'🐶',name:'Dog'},{e:'🐱',name:'Cat'},{e:'🐸',name:'Frog'},
+    {e:'🐧',name:'Penguin'},{e:'🐨',name:'Koala'},{e:'🐯',name:'Tiger'},
+    {e:'🐮',name:'Cow'},{e:'🐰',name:'Rabbit'}
+  ];
+  let score = 0, current = null;
+  
+  function next() {
+    const pool = [...animals].sort(()=>Math.random()-0.5).slice(0,4);
+    current = pool[Math.floor(Math.random()*4)];
+    const shuffled = [...pool].sort(()=>Math.random()-0.5);
+    
+    area.innerHTML = `<div id="animalGame">
+      <div class="animal-prompt">Tap the <strong>${current.name}</strong>!</div>
+      <div class="animal-target">${current.e}</div>
+      <div class="animal-row">${shuffled.map(a =>
+        `<div class="animal-card" onclick="amTap(this,'${a.e}','${current.e}')">${a.e}</div>`
+      ).join('')}</div>
+      <div style="text-align:center;font-weight:800;color:#555">⭐ ${score}</div>
+    </div>`;
+    showParentTip('toddler','🐾 <strong>Parent Tip:</strong> Inspired by Concept Kids Animals — a tactile matching game for ages 2+. Try it with real animal toys at home!');
+  }
+  window.amTap = (el, picked, target) => {
+    if (picked === target) {
+      el.classList.add('correct');
+      score++;
+      playTone(880, 0.07);
+      setTimeout(next, 700);
+    } else {
+      el.classList.add('wrong');
+      playTone(150, 0.05);
+      setTimeout(() => el.classList.remove('wrong'), 500);
     }
-  </script>
+  };
+  next();
+}
+
+// ────────────────────────────────────────────────────────
+// 4. SHAPE SORTER
+// ────────────────────────────────────────────────────────
+function initShapeSorter(area) {
+  const shapes = [
+    {e:'🔴',name:'Circle'},{e:'🟦',name:'Square'},{e:'🔺',name:'Triangle'},
+    {e:'🟣',name:'Oval'},{e:'⭐',name:'Star'},{e:'💎',name:'Diamond'}
+  ];
+  let score = 0;
+  
+  function next() {
+    const pool = [...shapes].sort(()=>Math.random()-0.5).slice(0,3);
+    const shuffled = [...pool].sort(()=>Math.random()-0.5);
+    let filled = 0;
+    
+    area.innerHTML = `<div id="shapeGame">
+      <div id="shapePrompt">Match each shape to its slot! ⭐ ${score}</div>
+      <div class="shape-target-row">${pool.map((s,i) =>
+        `<div class="shape-slot" id="slot${i}" data-shape="${s.e}"><span style="opacity:0.25;font-size:1.4rem">${s.e}</span></div>`
+      ).join('')}</div>
+      <div class="shape-choices">${shuffled.map(s =>
+        `<div class="shape-piece" data-shape="${s.e}" onclick="ssTap(this,'${s.e}')">${s.e}</div>`
+      ).join('')}</div>
+    </div>`;
+    
+    window._ssPool = pool;
+    window._ssFilled = 0;
+    window._ssTotal = pool.length;
+    window._ssScore = score;
+    window._ssArea = area;
+    window._ssNext = next;
+    showParentTip('toddler','🔷 <strong>Parent Tip:</strong> Inspired by shape sorter toys and My First Castle Panic. Use physical blocks at home!');
+  }
+  
+  window.ssTap = (el, shape) => {
+    // find first empty matching slot
+    const slots = document.querySelectorAll('.shape-slot');
+    let placed = false;
+    slots.forEach(slot => {
+      if (slot.dataset.shape === shape && !slot.classList.contains('filled')) {
+        slot.classList.add('filled');
+        slot.innerHTML = shape;
+        el.classList.add('used');
+        placed = true;
+        playTone(660, 0.07);
+        window._ssFilled++;
+        score++;
+        if (window._ssFilled >= window._ssTotal) {
+          setTimeout(() => { initShapeSorter(window._ssArea); }, 800);
+        }
+      }
+    });
+    if (!placed) {
+      el.style.animation = 'shake 0.4s';
+      playTone(150, 0.05);
+      setTimeout(()=>el.style.animation='', 500);
+    }
+  };
+  next();
+}
+
+// ────────────────────────────────────────────────────────
+// 5. TAP TO STACK
+// ────────────────────────────────────────────────────────
+function initTapStack(area) {
+  const W = Math.min(320, area.offsetWidth - 16), H = 300;
+  const BH = 28, colors = ['#ff6b6b','#4ecdc4','#ffe66d','#a29bfe','#fd79a8','#f0932b','#6c5ce7'];
+  area.innerHTML = `<div style="width:100%;text-align:center"><div id="stackScore">Score: 0</div><canvas id="stackCanvas" width="${W}" height="${H}"></canvas><div style="font-size:0.85rem;color:#999;margin-top:8px">Tap / click to drop the block!</div></div>`;
+  
+  const canvas = document.getElementById('stackCanvas');
+  const ctx = canvas.getContext('2d');
+  
+  let stack = [{x:W/2-50,w:100,y:H-BH,color:'#74b9ff'}];
+  let mover = {x:0, w:80, dir:2, y:H-BH*2, color:colors[0]};
+  let score = 0, running = true, colorIdx = 1;
+  
+  function draw() {
+    ctx.clearRect(0,0,W,H);
+    // bg gradient
+    const grad = ctx.createLinearGradient(0,0,0,H);
+    grad.addColorStop(0,'#f0f4ff'); grad.addColorStop(1,'#e8f4f8');
+    ctx.fillStyle = grad; ctx.fillRect(0,0,W,H);
+    
+    // stacked
+    stack.forEach(b => {
+      ctx.fillStyle = b.color;
+      ctx.beginPath(); ctx.roundRect(b.x, b.y, b.w, BH, 6); ctx.fill();
+    });
+    // mover
+    if (running) {
+      ctx.fillStyle = mover.color;
+      ctx.beginPath(); ctx.roundRect(mover.x, mover.y, mover.w, BH, 6); ctx.fill();
+    }
+  }
+  
+  const t = setInterval(() => {
+    if (!running) return;
+    mover.x += mover.dir * 3;
+    if (mover.x <= 0 || mover.x + mover.w >= W) mover.dir *= -1;
+    draw();
+  }, 16);
+  gameTimers.push(t);
+  
+  function drop() {
+    if (!running) return;
+    const top = stack[stack.length-1];
+    const ol = Math.max(mover.x, top.x);
+    const or = Math.min(mover.x+mover.w, top.x+top.w);
+    const overlap = or - ol;
+    
+    if (overlap <= 0) { running = false; clearInterval(t);
+      ctx.fillStyle='rgba(0,0,0,0.4)'; ctx.fillRect(0,0,W,H);
+      ctx.fillStyle='#fff'; ctx.font=`bold 28px 'Fredoka One',cursive`;
+      ctx.textAlign='center'; ctx.fillText('Game Over! 🎉',W/2,H/2-10);
+      ctx.font=`18px 'Fredoka One',cursive`; ctx.fillText(`Score: ${score}`,W/2,H/2+24);
+      setTimeout(()=>initTapStack(area),2200); return;
+    }
+    
+    stack.forEach(b => b.y += BH); // shift down visually if too high
+    if (stack.length > 8) stack.shift();
+    
+    colorIdx = (colorIdx+1) % colors.length;
+    stack.push({x:ol, w:overlap, y:mover.y, color:mover.color});
+    mover = {x:0, w:Math.min(overlap+4, 100), dir:mover.dir, y:mover.y-BH, color:colors[colorIdx]};
+    score++; playTone(440+score*15, 0.06);
+    document.getElementById('stackScore').textContent = `Score: ${score}`;
+  }
+  
+  canvas.onclick = drop;
+  canvas.addEventListener('touchstart', e=>{e.preventDefault();drop();});
+  draw();
+}
+
+// ────────────────────────────────────────────────────────
+// 6. REACTION CLICK
+// ────────────────────────────────────────────────────────
+function initReaction(area) {
+  area.innerHTML = `<div id="reactionGame">
+    <div id="reactionScreen" onclick="reactionTap()">⏳ Wait for green…</div>
+    <div id="reactionResult">Tap when it turns GREEN!</div>
+  </div>`;
+  let state = 'waiting', t0;
+  let timeoutId;
+  
+  function reset() {
+    state = 'waiting';
+    const screen = document.getElementById('reactionScreen');
+    if (!screen) return;
+    screen.style.background='#e17055';
+    screen.textContent='🔴 Wait…';
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(()=>{
+      state='go'; screen.style.background='#00b894'; screen.textContent='🟢 NOW!'; t0=Date.now();
+    }, 1500 + Math.random()*2500);
+    gameTimers.push(timeoutId);
+  }
+  
+  window.reactionTap = () => {
+    const res = document.getElementById('reactionResult');
+    const screen = document.getElementById('reactionScreen');
+    if (!screen) return;
+    if (state==='waiting') {
+      res.textContent='😬 Too early! Wait for green.'; res.style.color='#e17055';
+      playTone(200,0.05); reset();
+    } else if (state==='go') {
+      const ms = Date.now()-t0;
+      let msg = ms<200?'🚀 Superhuman! '+ms+'ms':ms<350?'⚡ Amazing! '+ms+'ms':ms<500?'😊 Good! '+ms+'ms':'😅 Keep trying: '+ms+'ms';
+      res.textContent=msg; res.style.color='#00b894';
+      playTone(660,0.07); state='done'; screen.textContent='Click to try again!';
+      screen.style.background='#a29bfe';
+      screen.onclick=()=>{ screen.onclick=()=>reactionTap(); reset(); };
+    }
+  };
+  reset();
+}
+
+// ────────────────────────────────────────────────────────
+// 7. SPEED TYPING
+// ────────────────────────────────────────────────────────
+function initTyping(area) {
+  const words = ['cat','dog','sun','map','fun','jump','play','star','blue','fish','tree','cake','boat','bird','frog','king','lamp','moon','park','quiz'];
+  let score=0, timeLeft=20, word='', interval;
+  
+  function newWord() {
+    word = words[Math.floor(Math.random()*words.length)];
+    const w = document.getElementById('typingWord');
+    if (w) { w.textContent = word.toUpperCase(); w.style.animation='popIn 0.3s'; }
+  }
+  function startTimer() {
+    interval = setInterval(()=>{
+      timeLeft--;
+      const b = document.getElementById('typingBar');
+      if (b) b.style.width=(timeLeft/20*100)+'%';
+      if (timeLeft<=5 && b) b.style.background='#ff6b6b';
+      if (timeLeft<=0) { clearInterval(interval);
+        const inp = document.getElementById('typingInput');
+        if(inp) inp.disabled=true;
+        const sw = document.getElementById('typingWord');
+        if(sw) sw.textContent='⏰ Time Up!';
+        setTimeout(()=>initTyping(area), 2000);
+      }
+    },1000);
+    gameTimers.push(interval);
+  }
+  
+  area.innerHTML=`<div id="typingGame">
+    <div id="typingProgress"><div id="typingBar"></div></div>
+    <div id="typingWord">---</div>
+    <input id="typingInput" type="text" placeholder="Type the word…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+    <div id="typingScore">⭐ ${score} words | ${timeLeft}s left</div>
+  </div>`;
+  
+  newWord(); startTimer();
+  const inp = document.getElementById('typingInput');
+  inp.focus();
+  inp.addEventListener('input', ()=>{
+    if (inp.value.toLowerCase().trim() === word) {
+      score++; inp.value=''; playTone(660,0.06);
+      document.getElementById('typingScore').textContent=`⭐ ${score} words`;
+      newWord();
+    }
+  });
+}
+
+// ── HELPERS ─────────────────────────────────────────────
+const audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+function playTone(freq=440, dur=0.08) {
+  try {
+    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.frequency.value=freq; o.type='sine';
+    g.gain.setValueAtTime(0.3,audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+dur);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime+dur);
+  } catch(e){}
+}
+
+function showParentTip(cat, html) {
+  if (cat !== 'toddler') return;
+  const tip = document.getElementById('parentTip');
+  tip.innerHTML = html;
+  tip.style.display = 'block';
+}
+</script>
 </body>
 </html>
