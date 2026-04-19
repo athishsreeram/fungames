@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Panda Pairs - Black & White Panda Puzzle</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%);
+            font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Comic Neue', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+        .home-btn {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            background: #4CAF50;
+            color: white;
+            font-size: 1.8rem;
+            text-decoration: none;
+            padding: 12px 18px;
+            border-radius: 50px;
+            box-shadow: 0 5px 0 #2E7D32;
+            transition: 0.05s linear;
+            z-index: 100;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .home-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #2E7D32;
+        }
+        .game-container {
+            max-width: 600px;
+            width: 100%;
+            background: #F5F5F5;
+            border-radius: 60px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            padding: 20px 16px 30px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        h1 {
+            font-size: 2rem;
+            margin: 0 0 5px;
+            color: #1a1a1a;
+        }
+        .sub {
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 15px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+            background: #333;
+            padding: 15px;
+            border-radius: 30px;
+            margin-bottom: 20px;
+        }
+        .cell {
+            aspect-ratio: 1 / 1;
+            background: #FFF8F0;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: 0.05s linear;
+            border: 2px solid #CCC;
+            font-weight: bold;
+        }
+        .cell.black-panda {
+            background: #2c2c2c;
+            border-color: #555;
+        }
+        .cell.white-panda {
+            background: #FFFFFF;
+            border-color: #999;
+        }
+        .cell.empty {
+            background: #FFF8F0;
+            border: 2px dashed #AAA;
+        }
+        .cell.selected {
+            transform: scale(0.96);
+            box-shadow: 0 0 0 3px #FFD700;
+            border-color: #FFD700;
+        }
+        .level-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .level-btn {
+            background: #DDD;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.05s linear;
+        }
+        .level-btn.active {
+            background: #4CAF50;
+            color: white;
+            box-shadow: 0 3px 0 #2E7D32;
+        }
+        .level-btn:active {
+            transform: translateY(2px);
+        }
+        .counter {
+            font-size: 1.1rem;
+            margin: 10px 0;
+            background: #E8E8E8;
+            display: inline-block;
+            padding: 5px 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            color: #333;
+        }
+        .color-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 10px 0;
+        }
+        .color-btn {
+            border: none;
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.05s linear;
+            box-shadow: 0 4px 0 #999;
+        }
+        .color-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #999;
+        }
+        .black-btn {
+            background: #2c2c2c;
+            color: white;
+        }
+        .white-btn {
+            background: #FFFFFF;
+            color: #333;
+            border: 1px solid #CCC;
+        }
+        .black-btn.active-tool {
+            box-shadow: 0 0 0 3px #FFD700, 0 4px 0 #999;
+        }
+        .white-btn.active-tool {
+            box-shadow: 0 0 0 3px #FFD700, 0 4px 0 #999;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 15px 0 10px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            border: none;
+            font-size: 0.9rem;
+            font-weight: bold;
+            padding: 10px 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.05s linear;
+            box-shadow: 0 4px 0 #999;
+        }
+        .btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #999;
+        }
+        .reset-selection-btn {
+            background: #FF9800;
+            color: white;
+        }
+        .new-game-btn {
+            background: #2196F3;
+            color: white;
+        }
+        .show-answer-btn {
+            background: #9C27B0;
+            color: white;
+        }
+        .message-area {
+            margin-top: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            min-height: 55px;
+        }
+        .win {
+            color: #27ae60;
+            background: #D5F5E3;
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 40px;
+        }
+        @media (max-width: 500px) {
+            .btn { padding: 8px 12px; font-size: 0.75rem; }
+            .color-btn { padding: 8px 18px; font-size: 1rem; }
+            .level-btn { padding: 6px 15px; font-size: 0.8rem; }
+            h1 { font-size: 1.5rem; }
+            .cell { font-size: 1.5rem; }
+            .home-btn { font-size: 1.3rem; padding: 8px 14px; top: 10px; left: 10px; }
+        }
+    </style>
+</head>
+<body>
+<a href="index.html" class="home-btn" aria-label="Home">🏠 Home</a>
+
+<div class="game-container">
+    <h1>🐼 Panda Pairs ⚪</h1>
+    <div class="sub">fill the grid with black and white pandas! No three in a row!</div>
+
+    <div class="level-buttons">
+        <button class="level-btn active" data-level="easy">🌱 Easy (4x4)</button>
+        <button class="level-btn" data-level="hard">⭐ Hard (6x6)</button>
+    </div>
+
+    <div class="counter" id="counter">🐼 Pandas placed: 0 / 0</div>
+
+    <div class="color-buttons">
+        <button class="color-btn black-btn" id="blackBtn">🐼 Black</button>
+        <button class="color-btn white-btn" id="whiteBtn">⚪ White</button>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="button-group">
+        <button class="btn reset-selection-btn" id="resetSelectionBtn">🔁 Clear Selection</button>
+        <button class="btn new-game-btn" id="newGameBtn">🎲 New Game</button>
+        <button class="btn show-answer-btn" id="showAnswerBtn">🔍 Show Answer</button>
+    </div>
+    <div class="message-area" id="message"></div>
+</div>
+
+<script>
+    (function(){
+        let currentLevel = 'easy';
+        let GRID_SIZE = 4;
+        let gridData = [];
+        let solutionData = [];
+        let selectedRow = -1, selectedCol = -1;
+        let currentColor = 'black'; // 'black' or 'white'
+        let isShowingAnswer = false;
+        let gameWon = false;
+        
+        let audioCtx = null;
+        let soundEnabled = false;
+        
+        function initAudio() {
+            if(!audioCtx && window.AudioContext) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            soundEnabled = true;
+            if(audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+        
+        function playSound(type) {
+            if(!audioCtx) initAudio();
+            if(!audioCtx) return;
+            if(audioCtx.state === 'suspended') {
+                audioCtx.resume().then(() => playSound(type));
+                return;
+            }
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = 'sine';
+                if(type === 'correct') {
+                    osc.frequency.value = 880;
+                    gain.gain.value = 0.15;
+                } else if(type === 'wrong') {
+                    osc.frequency.value = 440;
+                    gain.gain.value = 0.12;
+                } else if(type === 'place') {
+                    osc.frequency.value = 660;
+                    gain.gain.value = 0.1;
+                }
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3);
+                osc.stop(audioCtx.currentTime + 0.3);
+            } catch(e) {}
+        }
+        
+        function generateRandomSolution() {
+            let size = GRID_SIZE;
+            let solution = Array(size).fill().map(() => Array(size).fill(null));
+            let requiredEach = size / 2;
+            
+            // Helper to check if placing a color is valid
+            function isValid(row, col, color, grid) {
+                // Check horizontal three in a row
+                if(col >= 2 && grid[row][col-1] === color && grid[row][col-2] === color) return false;
+                // Check vertical three in a row
+                if(row >= 2 && grid[row-1][col] === color && grid[row-2][col] === color) return false;
+                return true;
+            }
+            
+            // Helper to count remaining needed
+            function getRemainingNeeded(row, col, color, grid) {
+                let rowCount = grid[row].filter(c => c === color).length;
+                let colCount = grid.filter(r => r[col] === color).length;
+                let maxAllowed = requiredEach;
+                return { rowOk: rowCount < maxAllowed, colOk: colCount < maxAllowed };
+            }
+            
+            // Recursive backtracking to generate random solution
+            function backtrack(row, col, grid) {
+                if(row === size) return true;
+                
+                let nextRow = row;
+                let nextCol = col + 1;
+                if(nextCol === size) {
+                    nextRow = row + 1;
+                    nextCol = 0;
+                }
+                
+                // Shuffle colors for randomness
+                let colors = ['black', 'white'];
+                for(let i = colors.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [colors[i], colors[j]] = [colors[j], colors[i]];
+                }
+                
+                for(let color of colors) {
+                    if(isValid(row, col, color, grid)) {
+                        let needed = getRemainingNeeded(row, col, color, grid);
+                        if(needed.rowOk && needed.colOk) {
+                            grid[row][col] = color;
+                            if(backtrack(nextRow, nextCol, grid)) {
+                                return true;
+                            }
+                            grid[row][col] = null;
+                        }
+                    }
+                }
+                return false;
+            }
+            
+            backtrack(0, 0, solution);
+            return solution;
+        }
+        
+        function createPuzzleFromSolution(solution) {
+            let size = GRID_SIZE;
+            let puzzle = solution.map(row => [...row]);
+            let totalCells = size * size;
+            let cluesToKeep = currentLevel === 'easy' ? Math.floor(totalCells * 0.5) : Math.floor(totalCells * 0.35);
+            
+            // Create list of all positions
+            let positions = [];
+            for(let i = 0; i < size; i++) {
+                for(let j = 0; j < size; j++) {
+                    positions.push([i, j]);
+                }
+            }
+            
+            // Shuffle positions
+            for(let i = positions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [positions[i], positions[j]] = [positions[j], positions[i]];
+            }
+            
+            // Keep only 'cluesToKeep' clues
+            for(let i = cluesToKeep; i < positions.length; i++) {
+                let [r, c] = positions[i];
+                puzzle[r][c] = null;
+            }
+            
+            return puzzle;
+        }
+        
+        function initPuzzle() {
+            GRID_SIZE = currentLevel === 'easy' ? 4 : 6;
+            let solution = generateRandomSolution();
+            solutionData = solution.map(row => [...row]);
+            gridData = createPuzzleFromSolution(solution);
+            selectedRow = -1;
+            selectedCol = -1;
+            isShowingAnswer = false;
+            gameWon = false;
+            updateCounter();
+            renderGrid();
+        }
+        
+        function updateCounter() {
+            let filled = 0;
+            for(let i = 0; i < GRID_SIZE; i++) {
+                for(let j = 0; j < GRID_SIZE; j++) {
+                    if(gridData[i][j] !== null) filled++;
+                }
+            }
+            let total = GRID_SIZE * GRID_SIZE;
+            document.getElementById('counter').innerHTML = `🐼 Pandas placed: ${filled} / ${total}`;
+            
+            // Check win
+            if(filled === total && !gameWon) {
+                let isCorrect = true;
+                for(let i = 0; i < GRID_SIZE && isCorrect; i++) {
+                    for(let j = 0; j < GRID_SIZE && isCorrect; j++) {
+                        if(gridData[i][j] !== solutionData[i][j]) isCorrect = false;
+                    }
+                }
+                if(isCorrect) {
+                    gameWon = true;
+                    playSound('correct');
+                    showMessage(`🎉 PANDA-MONIUM! You solved it! 🎉🐼`, true);
+                    triggerConfetti();
+                } else {
+                    showMessage("⚠️ Grid is full but not correct! Try again!", false);
+                    playSound('wrong');
+                }
+            }
+        }
+        
+        function checkRowColRules() {
+            let requiredEach = GRID_SIZE / 2;
+            let valid = true;
+            let messages = [];
+            
+            for(let i = 0; i < GRID_SIZE; i++) {
+                let rowBlacks = gridData[i].filter(c => c === 'black').length;
+                let rowWhites = gridData[i].filter(c => c === 'white').length;
+                if(rowBlacks > requiredEach) {
+                    valid = false;
+                    messages.push(`Row ${i+1} has too many black pandas!`);
+                }
+                if(rowWhites > requiredEach) {
+                    valid = false;
+                    messages.push(`Row ${i+1} has too many white pandas!`);
+                }
+                
+                let colBlacks = 0, colWhites = 0;
+                for(let j = 0; j < GRID_SIZE; j++) {
+                    if(gridData[j][i] === 'black') colBlacks++;
+                    if(gridData[j][i] === 'white') colWhites++;
+                }
+                if(colBlacks > requiredEach) {
+                    valid = false;
+                    messages.push(`Column ${String.fromCharCode(65+i)} has too many black pandas!`);
+                }
+                if(colWhites > requiredEach) {
+                    valid = false;
+                    messages.push(`Column ${String.fromCharCode(65+i)} has too many white pandas!`);
+                }
+            }
+            
+            // Check three in a row
+            for(let i = 0; i < GRID_SIZE; i++) {
+                for(let j = 0; j < GRID_SIZE - 2; j++) {
+                    if(gridData[i][j] !== null && gridData[i][j] === gridData[i][j+1] && gridData[i][j] === gridData[i][j+2]) {
+                        valid = false;
+                        messages.push(`Three ${gridData[i][j]} pandas in a row at row ${i+1}!`);
+                    }
+                    if(gridData[j][i] !== null && gridData[j][i] === gridData[j+1][i] && gridData[j][i] === gridData[j+2][i]) {
+                        valid = false;
+                        messages.push(`Three ${gridData[j][i]} pandas in a column at col ${String.fromCharCode(65+i)}!`);
+                    }
+                }
+            }
+            
+            if(!valid && messages.length > 0) {
+                showMessage(`⚠️ ${messages[0]}`, false);
+            }
+            return valid;
+        }
+        
+        function placePanda(row, col, color) {
+            if(gridData[row][col] !== null) {
+                playSound('wrong');
+                showMessage(`❌ This spot already has a panda!`, false);
+                return false;
+            }
+            
+            // Temporarily place to check rules
+            let oldValue = gridData[row][col];
+            gridData[row][col] = color;
+            
+            let requiredEach = GRID_SIZE / 2;
+            let rowCount = gridData[row].filter(c => c === color).length;
+            let colCount = 0;
+            for(let i = 0; i < GRID_SIZE; i++) {
+                if(gridData[i][col] === color) colCount++;
+            }
+            
+            let valid = true;
+            if(rowCount > requiredEach) valid = false;
+            if(colCount > requiredEach) valid = false;
+            
+            // Check three in a row horizontally
+            if(col >= 2 && gridData[row][col-1] === color && gridData[row][col-2] === color) valid = false;
+            if(col <= GRID_SIZE-3 && gridData[row][col+1] === color && gridData[row][col+2] === color) valid = false;
+            if(col >= 1 && col <= GRID_SIZE-2 && gridData[row][col-1] === color && gridData[row][col+1] === color) valid = false;
+            
+            // Check three in a row vertically
+            if(row >= 2 && gridData[row-1][col] === color && gridData[row-2][col] === color) valid = false;
+            if(row <= GRID_SIZE-3 && gridData[row+1][col] === color && gridData[row+2][col] === color) valid = false;
+            if(row >= 1 && row <= GRID_SIZE-2 && gridData[row-1][col] === color && gridData[row+1][col] === color) valid = false;
+            
+            if(!valid) {
+                gridData[row][col] = oldValue;
+                playSound('wrong');
+                showMessage(`❌ Can't place ${color} panda there! No three in a row!`, false);
+                return false;
+            }
+            
+            playSound('place');
+            updateCounter();
+            renderGrid();
+            checkRowColRules();
+            return true;
+        }
+        
+        function renderGrid() {
+            const gridEl = document.getElementById('grid');
+            gridEl.innerHTML = '';
+            for(let i = 0; i < GRID_SIZE; i++) {
+                for(let j = 0; j < GRID_SIZE; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    
+                    let value;
+                    if(isShowingAnswer) {
+                        value = solutionData[i][j];
+                    } else {
+                        value = gridData[i][j];
+                    }
+                    
+                    if(value === 'black') {
+                        cell.innerText = '🐼';
+                        cell.classList.add('black-panda');
+                    } else if(value === 'white') {
+                        cell.innerText = '⚪';
+                        cell.classList.add('white-panda');
+                    } else {
+                        cell.innerText = '?';
+                        cell.classList.add('empty');
+                    }
+                    
+                    if(selectedRow === i && selectedCol === j && !isShowingAnswer) {
+                        cell.classList.add('selected');
+                    }
+                    
+                    cell.addEventListener('click', (function(r,c){ return function(){ if(!isShowingAnswer && !gameWon) selectCell(r,c); }; })(i,j));
+                    gridEl.appendChild(cell);
+                }
+            }
+        }
+        
+        function selectCell(row, col) {
+            selectedRow = row;
+            selectedCol = col;
+            renderGrid();
+            placePanda(row, col, currentColor);
+        }
+        
+        function resetSelection() {
+            if(isShowingAnswer) {
+                showMessage("Hide the answer first!", false);
+                return;
+            }
+            selectedRow = -1;
+            selectedCol = -1;
+            renderGrid();
+            showMessage("✨ Selection cleared!", false);
+            playSound('correct');
+        }
+        
+        function newGame() {
+            if(isShowingAnswer) {
+                showMessage("Hide the answer first!", false);
+                return;
+            }
+            initPuzzle();
+            showMessage("🎲 New panda puzzle! Fill the grid with black and white pandas!", false);
+            playSound('correct');
+        }
+        
+        function showAnswer() {
+            if(!isShowingAnswer) {
+                isShowingAnswer = true;
+                renderGrid();
+                showMessage("🔍 Here's the solution! Press again to hide and keep solving.", false);
+            } else {
+                isShowingAnswer = false;
+                renderGrid();
+                showMessage("✨ Answer hidden! Keep placing pandas!", false);
+            }
+            playSound('correct');
+        }
+        
+        function triggerConfetti() {
+            const container = document.querySelector('.game-container');
+            const rect = container.getBoundingClientRect();
+            const emojis = ['🐼', '🐼', '⚪', '🐼', '✨', '🌟', '🌈', '⭐', '🎋', '🐾'];
+            for(let i = 0; i < 60; i++) {
+                const conf = document.createElement('div');
+                conf.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                conf.style.position = 'fixed';
+                conf.style.left = (rect.left + rect.width/2 + (Math.random() - 0.5) * 200) + 'px';
+                conf.style.top = (rect.top + 50) + 'px';
+                conf.style.fontSize = (18 + Math.random() * 28) + 'px';
+                conf.style.pointerEvents = 'none';
+                conf.style.zIndex = '999';
+                conf.style.transition = 'all 0.8s ease-out';
+                document.body.appendChild(conf);
+                setTimeout(() => {
+                    conf.style.transform = `translateY(${120 + Math.random() * 200}px) rotate(${Math.random() * 360}deg)`;
+                    conf.style.opacity = '0';
+                }, 10);
+                setTimeout(() => conf.remove(), 900);
+            }
+        }
+        
+        function showMessage(msg, isWin = false) {
+            const msgDiv = document.getElementById('message');
+            if(isWin) {
+                msgDiv.innerHTML = `<span class="win">🎉 ${msg} 🎉</span>`;
+            } else {
+                msgDiv.innerHTML = `<span>${msg}</span>`;
+            }
+            if(!isWin) {
+                setTimeout(() => {
+                    if(msgDiv.innerHTML === `<span>${msg}</span>`) msgDiv.innerHTML = '';
+                }, 2500);
+            }
+        }
+        
+        function setLevel(level) {
+            if(isShowingAnswer) {
+                showMessage("Hide the answer first!", false);
+                return;
+            }
+            currentLevel = level;
+            document.querySelectorAll('.level-btn').forEach(btn => {
+                if(btn.dataset.level === level) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+            initPuzzle();
+            let size = currentLevel === 'easy' ? 4 : 6;
+            showMessage(`${level === 'easy' ? '🌱 Easy: 4x4 grid' : '⭐ Hard: 6x6 grid'} - No three pandas in a row!`, false);
+        }
+        
+        function attachEvents() {
+            document.getElementById('resetSelectionBtn').addEventListener('click', resetSelection);
+            document.getElementById('newGameBtn').addEventListener('click', newGame);
+            document.getElementById('showAnswerBtn').addEventListener('click', showAnswer);
+            document.getElementById('blackBtn').addEventListener('click', () => {
+                currentColor = 'black';
+                document.getElementById('blackBtn').classList.add('active-tool');
+                document.getElementById('whiteBtn').classList.remove('active-tool');
+                showMessage("🐼 Now placing BLACK pandas!", false);
+            });
+            document.getElementById('whiteBtn').addEventListener('click', () => {
+                currentColor = 'white';
+                document.getElementById('whiteBtn').classList.add('active-tool');
+                document.getElementById('blackBtn').classList.remove('active-tool');
+                showMessage("⚪ Now placing WHITE pandas!", false);
+            });
+            document.querySelectorAll('.level-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => setLevel(e.target.dataset.level));
+            });
+            document.body.addEventListener('touchstart', () => initAudio());
+            document.body.addEventListener('click', () => initAudio());
+            
+            // Set default active tool
+            document.getElementById('blackBtn').classList.add('active-tool');
+        }
+        
+        function init() {
+            attachEvents();
+            initPuzzle();
+            initAudio();
+        }
+        
+        init();
+    })();
+</script>
+</body>
+</html>
