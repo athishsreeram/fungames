@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Hide and Squeak - Mouse Hide & Seek</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #228B22 0%, #2E7D32 100%);
+            font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Comic Neue', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+        .home-btn {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            background: #FFB347;
+            color: white;
+            font-size: 1.8rem;
+            text-decoration: none;
+            padding: 12px 18px;
+            border-radius: 50px;
+            box-shadow: 0 5px 0 #CC7000;
+            transition: 0.05s linear;
+            z-index: 100;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .home-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #CC7000;
+        }
+        .game-container {
+            max-width: 550px;
+            width: 100%;
+            background: #FDF5E6;
+            border-radius: 60px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            padding: 20px 16px 30px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        h1 {
+            font-size: 2rem;
+            margin: 0 0 5px;
+            color: #8B4513;
+        }
+        .sub {
+            font-size: 0.9rem;
+            color: #A0522D;
+            margin-bottom: 15px;
+        }
+        .parent-tip {
+            background: #FFF8DC;
+            border-left: 8px solid #FFB347;
+            padding: 10px 15px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+            color: #8B4513;
+            text-align: left;
+        }
+        .parent-tip::before {
+            content: "💡 Parent Tip: ";
+            font-weight: bold;
+            color: #FF8C00;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            background: #8B6914;
+            padding: 18px;
+            border-radius: 40px;
+            margin-bottom: 20px;
+        }
+        .cell {
+            aspect-ratio: 1 / 1;
+            background: #90EE90;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: 0.05s linear;
+            border: 3px solid #F5DEB3;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-weight: bold;
+        }
+        .cell.flower {
+            background: #FF69B4;
+            border-color: #FFB6C1;
+        }
+        .cell.flower.revealed {
+            background: #FFE4E1;
+            border-color: #FFB347;
+        }
+        .cell.mouse {
+            background: #D2B48C;
+            border-color: #8B4513;
+        }
+        .cell.selected {
+            transform: scale(0.96);
+            box-shadow: 0 0 0 3px #FFD700;
+        }
+        .cell-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #8B4513;
+        }
+        .level-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .level-btn {
+            background: #DEB887;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.05s linear;
+        }
+        .level-btn.active {
+            background: #FF8C00;
+            color: white;
+            box-shadow: 0 3px 0 #CC7000;
+        }
+        .level-btn:active {
+            transform: translateY(2px);
+        }
+        .counter {
+            font-size: 1.2rem;
+            margin: 10px 0;
+            background: #FFF8DC;
+            display: inline-block;
+            padding: 5px 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            color: #8B4513;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 15px 0 10px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            border: none;
+            font-size: 0.9rem;
+            font-weight: bold;
+            padding: 10px 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.05s linear;
+            box-shadow: 0 4px 0 #8B6914;
+        }
+        .btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #8B6914;
+        }
+        .reset-selection-btn {
+            background: #95a5a6;
+            color: white;
+            box-shadow: 0 4px 0 #5d6d6e;
+        }
+        .new-game-btn {
+            background: #2ECC71;
+            color: white;
+            box-shadow: 0 4px 0 #229954;
+        }
+        .show-answer-btn {
+            background: #FF8C00;
+            color: white;
+            box-shadow: 0 4px 0 #CC7000;
+        }
+        .message-area {
+            margin-top: 12px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            min-height: 55px;
+        }
+        .win {
+            color: #27ae60;
+            background: #D5F5E3;
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 40px;
+        }
+        @media (max-width: 500px) {
+            .btn { padding: 8px 12px; font-size: 0.8rem; }
+            .level-btn { padding: 6px 15px; font-size: 0.85rem; }
+            h1 { font-size: 1.6rem; }
+            .cell { font-size: 1.5rem; }
+            .cell-number { font-size: 1.3rem; }
+            .home-btn { font-size: 1.3rem; padding: 8px 14px; top: 10px; left: 10px; }
+        }
+    </style>
+</head>
+<body>
+<a href="index.html" class="home-btn" aria-label="Home">🏠 Home</a>
+
+<div class="game-container">
+    <h1>🐭 Hide and Squeak 🌸</h1>
+    <div class="sub">find all the squeaky mice hiding under flowers!</div>
+    <div class="parent-tip">Tap a flower to lift it up. Numbers tell you how many mice are in the 8 flowers around it! Find all mice without tapping on them.</div>
+
+    <div class="level-buttons">
+        <button class="level-btn active" data-level="easy">🌱 Easy (3 mice)</button>
+        <button class="level-btn" data-level="hard">⭐ Hard (5 mice)</button>
+    </div>
+
+    <div class="counter" id="counter">🐭 Mice found: 0 / 0</div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="button-group">
+        <button class="btn reset-selection-btn" id="resetSelectionBtn">🔁 Reset Selection</button>
+        <button class="btn new-game-btn" id="newGameBtn">🎲 New Game</button>
+        <button class="btn show-answer-btn" id="showAnswerBtn">🔍 Show Answer</button>
+    </div>
+    <div class="message-area" id="message"></div>
+</div>
+
+<script>
+    (function(){
+        const GRID_SIZE = 4;
+        let currentLevel = 'easy';
+        let mousePositions = [];     // array of {row, col} for mice
+        let revealedCells = [];      // true = flower lifted (shows number or mouse)
+        let numbersGrid = [];         // store numbers for each cell (0-8)
+        let selectedRow = -1, selectedCol = -1;
+        let isShowingAnswer = false;
+        let gameWon = false;
+        
+        let audioCtx = null;
+        let soundEnabled = false;
+        
+        function initAudio() {
+            if(!audioCtx && window.AudioContext) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            soundEnabled = true;
+            if(audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+        
+        function playSound(type) {
+            if(!audioCtx) initAudio();
+            if(!audioCtx) return;
+            if(audioCtx.state === 'suspended') {
+                audioCtx.resume().then(() => playSound(type));
+                return;
+            }
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = 'sine';
+                if(type === 'correct') {
+                    osc.frequency.value = 880;
+                    gain.gain.value = 0.15;
+                } else if(type === 'wrong') {
+                    osc.frequency.value = 440;
+                    gain.gain.value = 0.12;
+                } else if(type === 'mouse') {
+                    osc.frequency.value = 660;
+                    gain.gain.value = 0.1;
+                    osc.type = 'triangle';
+                }
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3);
+                osc.stop(audioCtx.currentTime + 0.3);
+            } catch(e) {}
+        }
+        
+        function playSqueak() {
+            if(!audioCtx) initAudio();
+            if(!audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = 'sine';
+                osc.frequency.value = 1200;
+                gain.gain.value = 0.08;
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.2);
+                osc.stop(audioCtx.currentTime + 0.2);
+                
+                setTimeout(() => {
+                    const osc2 = audioCtx.createOscillator();
+                    const gain2 = audioCtx.createGain();
+                    osc2.connect(gain2);
+                    gain2.connect(audioCtx.destination);
+                    osc2.type = 'sine';
+                    osc2.frequency.value = 1000;
+                    gain2.gain.value = 0.08;
+                    osc2.start();
+                    gain2.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.2);
+                    osc2.stop(audioCtx.currentTime + 0.2);
+                }, 150);
+            } catch(e) {}
+        }
+        
+        function calculateNumbers() {
+            let numbers = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0));
+            for(let r = 0; r < GRID_SIZE; r++) {
+                for(let c = 0; c < GRID_SIZE; c++) {
+                    let count = 0;
+                    for(let dr = -1; dr <= 1; dr++) {
+                        for(let dc = -1; dc <= 1; dc++) {
+                            if(dr === 0 && dc === 0) continue;
+                            let nr = r + dr;
+                            let nc = c + dc;
+                            if(nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
+                                if(mousePositions.some(m => m.row === nr && m.col === nc)) {
+                                    count++;
+                                }
+                            }
+                        }
+                    }
+                    numbers[r][c] = count;
+                }
+            }
+            return numbers;
+        }
+        
+        function generateRandomPuzzle() {
+            let numMice = currentLevel === 'easy' ? 3 : 5;
+            let mice = [];
+            let attempts = 0;
+            let maxAttempts = 100;
+            
+            while(mice.length < numMice && attempts < maxAttempts) {
+                let row = Math.floor(Math.random() * GRID_SIZE);
+                let col = Math.floor(Math.random() * GRID_SIZE);
+                if(!mice.some(m => m.row === row && m.col === col)) {
+                    // Check if too close to other mice (optional: keep them at least 2 apart for easier play)
+                    let tooClose = false;
+                    for(let m of mice) {
+                        if(Math.abs(m.row - row) <= 1 && Math.abs(m.col - col) <= 1) {
+                            tooClose = true;
+                            break;
+                        }
+                    }
+                    if(!tooClose || numMice <= 4) {
+                        mice.push({row, col});
+                    }
+                }
+                attempts++;
+            }
+            
+            return mice;
+        }
+        
+        function initPuzzle() {
+            mousePositions = generateRandomPuzzle();
+            numbersGrid = calculateNumbers();
+            revealedCells = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(false));
+            selectedRow = -1;
+            selectedCol = -1;
+            isShowingAnswer = false;
+            gameWon = false;
+            updateCounter();
+            renderGrid();
+        }
+        
+        function updateCounter() {
+            let foundCount = 0;
+            for(let mouse of mousePositions) {
+                if(revealedCells[mouse.row][mouse.col]) foundCount++;
+            }
+            let totalMice = mousePositions.length;
+            document.getElementById('counter').innerHTML = `🐭 Mice found: ${foundCount} / ${totalMice}`;
+            
+            // Check win condition
+            if(foundCount === totalMice && !gameWon && totalMice > 0) {
+                gameWon = true;
+                showMessage(`🎉 SQUEAK! You found all ${totalMice} mice! 🎉🐭`, true);
+                triggerConfetti();
+            }
+        }
+        
+        function revealCell(row, col) {
+            if(revealedCells[row][col] || gameWon) return;
+            
+            // Check if this is a mouse
+            let isMouse = mousePositions.some(m => m.row === row && m.col === col);
+            
+            if(isMouse) {
+                revealedCells[row][col] = true;
+                playSqueak();
+                showMessage(`🐭 SQUEAK! You found a mouse at ${String.fromCharCode(65+col)}${row+1}!`, false);
+                updateCounter();
+                renderGrid();
+            } else {
+                revealedCells[row][col] = true;
+                playSound('correct');
+                let num = numbersGrid[row][col];
+                if(num === 0) {
+                    showMessage(`🌸 Just a flower! No mice nearby.`, false);
+                } else {
+                    showMessage(`🌸 ${num} mouse${num !== 1 ? 's' : ''} hiding nearby!`, false);
+                }
+                renderGrid();
+            }
+        }
+        
+        function renderGrid() {
+            const gridEl = document.getElementById('grid');
+            gridEl.innerHTML = '';
+            for(let i = 0; i < GRID_SIZE; i++) {
+                for(let j = 0; j < GRID_SIZE; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    
+                    if(isShowingAnswer) {
+                        let isMouse = mousePositions.some(m => m.row === i && m.col === j);
+                        if(isMouse) {
+                            cell.innerText = '🐭';
+                            cell.classList.add('mouse');
+                        } else {
+                            let num = numbersGrid[i][j];
+                            cell.innerText = num === 0 ? '🌸' : num;
+                            cell.classList.add('flower', 'revealed');
+                            if(num > 0) cell.classList.add('cell-number');
+                        }
+                    } else if(revealedCells[i][j]) {
+                        let isMouse = mousePositions.some(m => m.row === i && m.col === j);
+                        if(isMouse) {
+                            cell.innerText = '🐭';
+                            cell.classList.add('mouse');
+                        } else {
+                            let num = numbersGrid[i][j];
+                            cell.innerText = num === 0 ? '🌸' : num;
+                            cell.classList.add('flower', 'revealed');
+                            if(num > 0) cell.classList.add('cell-number');
+                        }
+                    } else {
+                        cell.innerText = '🌼';
+                        cell.classList.add('flower');
+                    }
+                    
+                    if(selectedRow === i && selectedCol === j && !isShowingAnswer) {
+                        cell.classList.add('selected');
+                    }
+                    
+                    cell.addEventListener('click', (function(r,c){ return function(){ if(!isShowingAnswer && !gameWon) revealCell(r,c); }; })(i,j));
+                    gridEl.appendChild(cell);
+                }
+            }
+        }
+        
+        function resetSelection() {
+            if(isShowingAnswer) {
+                showMessage("Hide the answer first!", false);
+                return;
+            }
+            selectedRow = -1;
+            selectedCol = -1;
+            renderGrid();
+            showMessage("✨ Selection cleared!", false);
+            playSound('correct');
+        }
+        
+        function newGame() {
+            if(isShowingAnswer) {
+                showMessage("Hide the answer first!", false);
+                return;
+            }
+            initPuzzle();
+            showMessage("🎲 New garden! Can you find all the hiding mice?", false);
+            playSound('correct');
+        }
+        
+        function showAnswer() {
+            if(!isShowingAnswer) {
+                isShowingAnswer = true;
+                renderGrid();
+                showMessage("🔍 Here are all the hiding mice! Press again to hide and keep playing.", false);
+            } else {
+                isShowingAnswer = false;
+                renderGrid();
+                showMessage("✨ Answer hidden! Keep searching for mice!", false);
+            }
+            playSound('correct');
+        }
+        
+        function triggerConfetti() {
+            const container = document.querySelector('.game-container');
+            const rect = container.getBoundingClientRect();
+            const emojis = ['🐭', '🐁', '🌸', '🌼', '✨', '🌟', '🌈', '⭐', '🧀'];
+            for(let i = 0; i < 50; i++) {
+                const conf = document.createElement('div');
+                conf.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                conf.style.position = 'fixed';
+                conf.style.left = (rect.left + rect.width/2 + (Math.random() - 0.5) * 180) + 'px';
+                conf.style.top = (rect.top + 50) + 'px';
+                conf.style.fontSize = (18 + Math.random() * 25) + 'px';
+                conf.style.pointerEvents = 'none';
+                conf.style.zIndex = '999';
+                conf.style.transition = 'all 0.8s ease-out';
+                document.body.appendChild(conf);
+                setTimeout(() => {
+                    conf.style.transform = `translateY(${120 + Math.random() * 180}px) rotate(${Math.random() * 360}deg)`;
+                    conf.style.opacity = '0';
+                }, 10);
+                setTimeout(() => conf.remove(), 900);
+            }
+        }
+        
+        function showMessage(msg, isWin = false) {
+            const msgDiv = document.getElementById('message');
+            if(isWin) {
+                msgDiv.innerHTML = `<span class="win">🎉 ${msg} 🎉</span>`;
+            } else {
+                msgDiv.innerHTML = `<span>${msg}</span>`;
+            }
+            if(!isWin) {
+                setTimeout(() => {
+                    if(msgDiv.innerHTML === `<span>${msg}</span>`) msgDiv.innerHTML = '';
+                }, 2000);
+            }
+        }
+        
+        function setLevel(level) {
+            if(isShowingAnswer) {
+                showMessage("Hide the answer first!", false);
+                return;
+            }
+            currentLevel = level;
+            document.querySelectorAll('.level-btn').forEach(btn => {
+                if(btn.dataset.level === level) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+            initPuzzle();
+            let numMice = currentLevel === 'easy' ? 3 : 5;
+            showMessage(`${level === 'easy' ? '🌱 Easy: 3 mice hiding' : '⭐ Hard: 5 mice hiding'} - Find them all!`, false);
+        }
+        
+        function attachEvents() {
+            document.getElementById('resetSelectionBtn').addEventListener('click', resetSelection);
+            document.getElementById('newGameBtn').addEventListener('click', newGame);
+            document.getElementById('showAnswerBtn').addEventListener('click', showAnswer);
+            document.querySelectorAll('.level-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => setLevel(e.target.dataset.level));
+            });
+            document.body.addEventListener('touchstart', () => initAudio());
+            document.body.addEventListener('click', () => initAudio());
+        }
+        
+        function init() {
+            attachEvents();
+            initPuzzle();
+            initAudio();
+        }
+        
+        init();
+    })();
+</script>
+</body>
+</html>

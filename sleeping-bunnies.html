@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Sleeping Bunnies - Cozy Bed Puzzle</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #2c3e50 0%, #1a1a2e 100%);
+            font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Comic Neue', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+        .home-btn {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            background: #FFB347;
+            color: white;
+            font-size: 1.8rem;
+            text-decoration: none;
+            padding: 12px 18px;
+            border-radius: 50px;
+            box-shadow: 0 5px 0 #CC7000;
+            transition: 0.05s linear;
+            z-index: 100;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .home-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #CC7000;
+        }
+        .game-container {
+            max-width: 550px;
+            width: 100%;
+            background: #FDF5E6;
+            border-radius: 60px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            padding: 20px 16px 30px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        h1 {
+            font-size: 2rem;
+            margin: 0 0 5px;
+            color: #8B4513;
+        }
+        .sub {
+            font-size: 0.9rem;
+            color: #A0522D;
+            margin-bottom: 15px;
+        }
+        .parent-tip {
+            background: #FFF8DC;
+            border-left: 8px solid #FFB347;
+            padding: 10px 15px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+            color: #8B4513;
+            text-align: left;
+        }
+        .parent-tip::before {
+            content: "💡 Parent Tip: ";
+            font-weight: bold;
+            color: #FF8C00;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            background: #FFE4C4;
+            padding: 18px;
+            border-radius: 40px;
+            margin-bottom: 20px;
+        }
+        .cell {
+            aspect-ratio: 1 / 1;
+            background: #FFF8F0;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: 0.05s linear;
+            border: 3px solid #DEB887;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .cell.empty {
+            background: #FFF8F0;
+            border: 3px dashed #DEB887;
+        }
+        .cell.has-bunny {
+            background: #FFE4B5;
+            border-color: #FFB347;
+            box-shadow: 0 0 0 3px #FFD699;
+        }
+        .cell.selected {
+            background: #FFD699;
+            border: 4px solid #FF8C00;
+            transform: scale(0.96);
+        }
+        .cell.warning {
+            background: #FFCCCC;
+            border-color: #FF4444;
+            animation: shake 0.3s ease-in-out;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-3px); }
+            75% { transform: translateX(3px); }
+        }
+        .level-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .level-btn {
+            background: #DEB887;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.05s linear;
+        }
+        .level-btn.active {
+            background: #FF8C00;
+            color: white;
+            box-shadow: 0 3px 0 #CC7000;
+        }
+        .level-btn:active {
+            transform: translateY(2px);
+        }
+        .counter {
+            font-size: 1.2rem;
+            margin: 10px 0;
+            background: #FFF8DC;
+            display: inline-block;
+            padding: 5px 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            color: #8B4513;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 15px 0 10px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            border: none;
+            font-size: 0.9rem;
+            font-weight: bold;
+            padding: 10px 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.05s linear;
+            box-shadow: 0 4px 0 #8B6914;
+        }
+        .btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #8B6914;
+        }
+        .reset-selection-btn {
+            background: #95a5a6;
+            color: white;
+            box-shadow: 0 4px 0 #5d6d6e;
+        }
+        .new-game-btn {
+            background: #2ECC71;
+            color: white;
+            box-shadow: 0 4px 0 #229954;
+        }
+        .show-answer-btn {
+            background: #FF8C00;
+            color: white;
+            box-shadow: 0 4px 0 #CC7000;
+        }
+        .message-area {
+            margin-top: 12px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            min-height: 55px;
+        }
+        .win {
+            color: #27ae60;
+            background: #D5F5E3;
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 40px;
+        }
+        @media (max-width: 500px) {
+            .btn { padding: 8px 12px; font-size: 0.8rem; }
+            .level-btn { padding: 6px 15px; font-size: 0.85rem; }
+            h1 { font-size: 1.6rem; }
+            .cell { font-size: 1.8rem; }
+            .home-btn { font-size: 1.3rem; padding: 8px 14px; top: 10px; left: 10px; }
+        }
+    </style>
+</head>
+<body>
+<a href="index.html" class="home-btn" aria-label="Home">🏠 Home</a>
+
+<div class="game-container">
+    <h1>🐰 Sleeping Bunnies 💤</h1>
+    <div class="sub">give each bunny its own cozy bed - no touching!</div>
+    <div class="parent-tip">Tap a square to give a bunny a bed. Bunnies can't touch each other (even diagonally!). Each row and column needs exactly 2 bunnies in Hard mode, 1 bunny in Easy mode.</div>
+
+    <div class="level-buttons">
+        <button class="level-btn active" data-level="easy">🌱 Easy (1 per row)</button>
+        <button class="level-btn" data-level="hard">⭐ Hard (2 per row)</button>
+    </div>
+
+    <div class="counter" id="counter">🐇 Bunnies placed: 0</div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="button-group">
+        <button class="btn reset-selection-btn" id="resetSelectionBtn">🔁 Clear Selection</button>
+        <button class="btn new-game-btn" id="newGameBtn">🎲 New Game</button>
+        <button class="btn show-answer-btn" id="showAnswerBtn">🔍 Show Answer</button>
+    </div>
+    <div class="message-area" id="message"></div>
+</div>
+
+<script>
+    (function(){
+        let currentLevel = 'easy';  // easy: 1 bunny per row/col, hard: 2 bunnies per row/col
+        let gridData = [];           // 4x4, true = bunny, false = empty
+        let solutionData = [];       // stored solution
+        let selectedRow = -1, selectedCol = -1;
+        let isShowingAnswer = false;
+        
+        let audioCtx = null;
+        let soundEnabled = false;
+        
+        const GRID_SIZE = 4;
+        const BUNNY_EMOJI = '🐰';
+        const EMPTY_EMOJI = '🛏️';
+        
+        // Required bunnies per row/col based on level
+        function getRequiredPerLine() {
+            return currentLevel === 'easy' ? 1 : 2;
+        }
+        
+        // Generate a random valid puzzle
+        function generateRandomPuzzle() {
+            let solution = [];
+            let required = getRequiredPerLine();
+            
+            // Try to generate a valid solution
+            let maxAttempts = 100;
+            for(let attempt = 0; attempt < maxAttempts; attempt++) {
+                solution = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(false));
+                
+                // For each row, place required number of bunnies
+                let success = true;
+                for(let row = 0; row < GRID_SIZE; row++) {
+                    let availableCols = [];
+                    for(let col = 0; col < GRID_SIZE; col++) {
+                        availableCols.push(col);
+                    }
+                    // Shuffle available cols
+                    for(let i = availableCols.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [availableCols[i], availableCols[j]] = [availableCols[j], availableCols[i]];
+                    }
+                    
+                    let placed = 0;
+                    for(let col of availableCols) {
+                        if(placed >= required) break;
+                        // Check if placing here violates column count
+                        let currentColCount = solution.reduce((sum, r) => sum + (r[col] ? 1 : 0), 0);
+                        if(currentColCount >= required) continue;
+                        
+                        // Check adjacency (including diagonals)
+                        let adjacent = false;
+                        for(let dr = -1; dr <= 1; dr++) {
+                            for(let dc = -1; dc <= 1; dc++) {
+                                if(dr === 0 && dc === 0) continue;
+                                let nr = row + dr;
+                                let nc = col + dc;
+                                if(nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
+                                    if(solution[nr][nc]) adjacent = true;
+                                }
+                            }
+                        }
+                        if(!adjacent) {
+                            solution[row][col] = true;
+                            placed++;
+                        }
+                    }
+                    if(placed < required) {
+                        success = false;
+                        break;
+                    }
+                }
+                
+                // Verify column counts
+                if(success) {
+                    for(let col = 0; col < GRID_SIZE; col++) {
+                        let colCount = solution.reduce((sum, row) => sum + (row[col] ? 1 : 0), 0);
+                        if(colCount !== required) {
+                            success = false;
+                            break;
+                        }
+                    }
+                }
+                
+                if(success) break;
+                if(attempt === maxAttempts - 1) {
+                    // Fallback to a known good solution
+                    if(required === 1) {
+                        solution = [
+                            [true, false, false, false],
+                            [false, true, false, false],
+                            [false, false, true, false],
+                            [false, false, false, true]
+                        ];
+                    } else {
+                        solution = [
+                            [true, true, false, false],
+                            [false, false, true, true],
+                            [true, true, false, false],
+                            [false, false, true, true]
+                        ];
+                    }
+                }
+            }
+            
+            // Create puzzle by hiding some bunnies (keep ~30-50% visible)
+            let puzzle = solution.map(row => [...row]);
+            let totalCells = GRID_SIZE * GRID_SIZE;
+            let cluesToKeep = required === 1 ? 3 : 5; // number of visible bunnies
+            
+            let positions = [];
+            for(let i=0; i<GRID_SIZE; i++) {
+                for(let j=0; j<GRID_SIZE; j++) {
+                    if(solution[i][j]) positions.push([i,j]);
+                }
+            }
+            // Shuffle positions
+            for(let i=positions.length-1; i>0; i--) {
+                const j = Math.floor(Math.random() * (i+1));
+                [positions[i], positions[j]] = [positions[j], positions[i]];
+            }
+            
+            // Keep only 'cluesToKeep' bunnies visible
+            for(let i=cluesToKeep; i<positions.length; i++) {
+                let [r,c] = positions[i];
+                puzzle[r][c] = false;
+            }
+            
+            return { grid: puzzle, solution: solution };
+        }
+        
+        function initPuzzle() {
+            let puzzleData = generateRandomPuzzle();
+            gridData = puzzleData.grid.map(row => [...row]);
+            solutionData = puzzleData.solution.map(row => [...row]);
+            selectedRow = -1;
+            selectedCol = -1;
+            isShowingAnswer = false;
+            updateCounter();
+            renderGrid();
+        }
+        
+        function updateCounter() {
+            let count = gridData.reduce((sum, row) => sum + row.filter(cell => cell === true).length, 0);
+            let required = getRequiredPerLine() * GRID_SIZE;
+            document.getElementById('counter').innerHTML = `🐇 Bunnies placed: ${count} / ${required}`;
+        }
+        
+        function renderGrid() {
+            const gridEl = document.getElementById('grid');
+            gridEl.innerHTML = '';
+            for(let i=0; i<GRID_SIZE; i++) {
+                for(let j=0; j<GRID_SIZE; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    
+                    if(isShowingAnswer) {
+                        cell.innerText = solutionData[i][j] ? BUNNY_EMOJI : EMPTY_EMOJI;
+                        cell.classList.add(solutionData[i][j] ? 'has-bunny' : 'empty');
+                    } else {
+                        cell.innerText = gridData[i][j] ? BUNNY_EMOJI : EMPTY_EMOJI;
+                        cell.classList.add(gridData[i][j] ? 'has-bunny' : 'empty');
+                    }
+                    
+                    if(selectedRow === i && selectedCol === j && !isShowingAnswer) {
+                        cell.classList.add('selected');
+                    }
+                    
+                    cell.addEventListener('click', (function(r,c){ return function(){ if(!isShowingAnswer) toggleCell(r,c); }; })(i,j));
+                    gridEl.appendChild(cell);
+                }
+            }
+        }
+        
+        function checkAdjacentConflict(row, col, testGrid = null) {
+            let grid = testGrid || gridData;
+            for(let dr = -1; dr <= 1; dr++) {
+                for(let dc = -1; dc <= 1; dc++) {
+                    if(dr === 0 && dc === 0) continue;
+                    let nr = row + dr;
+                    let nc = col + dc;
+                    if(nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
+                        if(grid[nr][nc]) return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
+        function checkRowColCount(row, col, newValue, testGrid = null) {
+            let grid = testGrid || gridData;
+            let required = getRequiredPerLine();
+            
+            // Temporarily apply change for checking
+            let original = grid[row][col];
+            if(testGrid === null) {
+                grid[row][col] = newValue;
+            }
+            
+            let rowCount = 0;
+            let colCount = 0;
+            for(let i=0; i<GRID_SIZE; i++) {
+                if(grid[row][i]) rowCount++;
+                if(grid[i][col]) colCount++;
+            }
+            
+            if(testGrid === null) {
+                grid[row][col] = original;
+            }
+            
+            return rowCount <= required && colCount <= required;
+        }
+        
+        function toggleCell(row, col) {
+            if(gridData[row][col]) {
+                // Remove bunny
+                gridData[row][col] = false;
+                playSound('correct');
+                showMessage(`💤 Bunny left the bed at ${String.fromCharCode(65+col)}${row+1}`, false);
+            } else {
+                // Try to add bunny
+                // Check adjacency
+                if(checkAdjacentConflict(row, col)) {
+                    playSound('wrong');
+                    showMessage(`❌ Too close! Bunnies can't touch each other!`, false);
+                    flashWarning(row, col);
+                    return;
+                }
+                
+                // Check row/col limits
+                let rowCount = gridData[row].filter(c => c === true).length;
+                let colCount = gridData.reduce((sum, r) => sum + (r[col] ? 1 : 0), 0);
+                let required = getRequiredPerLine();
+                
+                if(rowCount >= required) {
+                    playSound('wrong');
+                    showMessage(`❌ Row ${row+1} already has ${required} bunny(ies)!`, false);
+                    return;
+                }
+                if(colCount >= required) {
+                    playSound('wrong');
+                    showMessage(`❌ Column ${String.fromCharCode(65+col)} already has ${required} bunny(ies)!`, false);
+                    return;
+                }
+                
+                gridData[row][col] = true;
+                playSound('correct');
+                showMessage(`🐰 A bunny snuggled into bed at ${String.fromCharCode(65+col)}${row+1}!`, false);
+            }
+            
+            selectedRow = -1;
+            selectedCol = -1;
+            updateCounter();
+            renderGrid();
+            checkWin();
+        }
+        
+        function flashWarning(row, col) {
+            const gridEl = document.getElementById('grid');
+            const index = row * GRID_SIZE + col;
+            const cell = gridEl.children[index];
+            if(cell) {
+                cell.classList.add('warning');
+                setTimeout(() => cell.classList.remove('warning'), 300);
+            }
+        }
+        
+        function checkWin() {
+            let required = getRequiredPerLine();
+            let totalRequired = required * GRID_SIZE;
+            let bunnyCount = gridData.reduce((sum, row) => sum + row.filter(c => c === true).length, 0);
+            
+            if(bunnyCount !== totalRequired) return;
+            
+            // Verify all rows and columns have exact count
+            for(let i=0; i<GRID_SIZE; i++) {
+                let rowCount = gridData[i].filter(c => c === true).length;
+                let colCount = gridData.reduce((sum, r) => sum + (r[i] ? 1 : 0), 0);
+                if(rowCount !== required || colCount !== required) return;
+            }
+            
+            // Verify no adjacent bunnies
+            for(let i=0; i<GRID_SIZE; i++) {
+                for(let j=0; j<GRID_SIZE; j++) {
+                    if(gridData[i][j] && checkAdjacentConflict(i, j, gridData)) {
+                        return;
+                    }
+                }
+            }
+            
+            // WIN!
+            showMessage(`🎉 YAY! All bunnies are sleeping peacefully! 🎉🐰`, true);
+            triggerConfetti();
+        }
+        
+        function resetSelection() {
+            if(isShowingAnswer) {
+                showMessage("Hide the answer first!", false);
+                return;
+            }
+            selectedRow = -1;
+            selectedCol = -1;
+            renderGrid();
+            showMessage("✨ Selection cleared!", false);
+            playSound('correct');
+        }
+        
+        function newGame() {
+            if(isShowingAnswer) {
+                showMessage("Hide the answer first!", false);
+                return;
+            }
+            initPuzzle();
+            showMessage("🎲 New bunny bedroom! Give each bunny space!", false);
+            playSound('correct');
+        }
+        
+        function showAnswer() {
+            if(!isShowingAnswer) {
+                isShowingAnswer = true;
+                renderGrid();
+                showMessage("🔍 Here's the answer! Press again to hide and keep solving.", false);
+            } else {
+                isShowingAnswer = false;
+                renderGrid();
+                showMessage("✨ Answer hidden! Keep finding cozy beds for bunnies!", false);
+            }
+            playSound('correct');
+        }
+        
+        function triggerConfetti() {
+            const container = document.querySelector('.game-container');
+            const rect = container.getBoundingClientRect();
+            for(let i=0;i<50;i++) {
+                const conf = document.createElement('div');
+                const emojis = ['🐰','🐇','💤','✨','🌟','🌈','⭐','🛏️','🌸'];
+                conf.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                conf.style.position = 'fixed';
+                conf.style.left = (rect.left + rect.width/2 + (Math.random()-0.5)*180) + 'px';
+                conf.style.top = (rect.top + 50) + 'px';
+                conf.style.fontSize = (18+Math.random()*25)+'px';
+                conf.style.pointerEvents = 'none';
+                conf.style.zIndex = '999';
+                conf.style.transition = 'all 0.8s ease-out';
+                document.body.appendChild(conf);
+                setTimeout(() => { 
+                    conf.style.transform = `translateY(${120+Math.random()*180}px) rotate(${Math.random()*360}deg)`; 
+                    conf.style.opacity = '0'; 
+                }, 10);
+                setTimeout(() => conf.remove(), 900);
+            }
+        }
+        
+        function showMessage(msg, isWin=false) {
+            const msgDiv = document.getElementById('message');
+            if(isWin) {
+                msgDiv.innerHTML = `<span class="win">🎉 ${msg} 🎉</span>`;
+            } else {
+                msgDiv.innerHTML = `<span>${msg}</span>`;
+            }
+            if(!isWin) {
+                setTimeout(() => {
+                    if(msgDiv.innerHTML === `<span>${msg}</span>`) msgDiv.innerHTML = '';
+                }, 2000);
+            }
+        }
+        
+        function initAudio() {
+            if(!audioCtx && window.AudioContext) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            soundEnabled = true;
+            if(audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+        
+        function playSound(type) {
+            if(!audioCtx) initAudio();
+            if(!audioCtx) return;
+            if(audioCtx.state === 'suspended') {
+                audioCtx.resume().then(() => playSound(type));
+                return;
+            }
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = 'sine';
+                osc.frequency.value = type === 'correct' ? 880 : 440;
+                gain.gain.value = 0.12;
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3);
+                osc.stop(audioCtx.currentTime + 0.3);
+            } catch(e) {}
+        }
+        
+        function setLevel(level) {
+            if(isShowingAnswer) {
+                showMessage("Hide the answer first!", false);
+                return;
+            }
+            currentLevel = level;
+            document.querySelectorAll('.level-btn').forEach(btn => {
+                if(btn.dataset.level === level) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+            initPuzzle();
+            let required = getRequiredPerLine();
+            showMessage(`${level === 'easy' ? '🌱 Easy: 1 bunny per row/col' : '⭐ Hard: 2 bunnies per row/col'} - Let's play!`, false);
+        }
+        
+        function attachEvents() {
+            document.getElementById('resetSelectionBtn').addEventListener('click', resetSelection);
+            document.getElementById('newGameBtn').addEventListener('click', newGame);
+            document.getElementById('showAnswerBtn').addEventListener('click', showAnswer);
+            document.querySelectorAll('.level-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => setLevel(e.target.dataset.level));
+            });
+            document.body.addEventListener('touchstart', () => initAudio());
+            document.body.addEventListener('click', () => initAudio());
+        }
+        
+        function init() {
+            attachEvents();
+            initPuzzle();
+            initAudio();
+        }
+        
+        init();
+    })();
+</script>
+</body>
+</html>
