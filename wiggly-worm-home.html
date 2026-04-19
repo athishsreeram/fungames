@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Wiggly Worm Home - Maze for Toddlers</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #8B6914 0%, #654321 100%);
+            font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Comic Neue', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .game-container {
+            max-width: 600px;
+            width: 100%;
+            background: #FDF5E6;
+            border-radius: 60px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            padding: 20px 16px 30px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2rem;
+            margin: 0 0 5px;
+            color: #8B4513;
+        }
+        .sub {
+            font-size: 0.9rem;
+            color: #A0522D;
+            margin-bottom: 15px;
+        }
+        .parent-tip {
+            background: #FFF8DC;
+            border-left: 8px solid #FFA500;
+            padding: 10px 15px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+            color: #8B4513;
+            text-align: left;
+        }
+        .parent-tip::before {
+            content: "💡 Parent Tip: ";
+            font-weight: bold;
+            color: #FF8C00;
+        }
+        .canvas-wrapper {
+            background: #F5DEB3;
+            border-radius: 40px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: inset 0 0 0 3px #FFF8DC, 0 8px 18px rgba(0,0,0,0.1);
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background: #FFF8DC;
+            border-radius: 30px;
+            cursor: pointer;
+            touch-action: none;
+            width: 100%;
+            height: auto;
+        }
+        .level-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .level-btn {
+            background: #D2B48C;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.05s linear;
+        }
+        .level-btn.active {
+            background: #FF8C00;
+            color: white;
+            box-shadow: 0 3px 0 #CC7000;
+        }
+        .level-btn:active {
+            transform: translateY(2px);
+        }
+        .home-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            background: #FFF8DC;
+            color: #8B4513;
+            border: 2px solid #FFA500;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: 800;
+            box-shadow: 0 4px 0 #8B6914;
+        }
+        .home-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #8B6914; }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 15px 0 10px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            border: none;
+            font-size: 0.9rem;
+            font-weight: bold;
+            padding: 10px 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.05s linear;
+            box-shadow: 0 4px 0 #8B6914;
+        }
+        .btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #8B6914;
+        }
+        .reset-selection-btn {
+            background: #95a5a6;
+            color: white;
+            box-shadow: 0 4px 0 #5d6d6e;
+        }
+        .new-game-btn {
+            background: #2ECC71;
+            color: white;
+            box-shadow: 0 4px 0 #229954;
+        }
+        .show-answer-btn {
+            background: #FF8C00;
+            color: white;
+            box-shadow: 0 4px 0 #CC7000;
+        }
+        .message-area {
+            margin-top: 12px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            min-height: 55px;
+        }
+        .win {
+            color: #27ae60;
+            background: #D5F5E3;
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 40px;
+        }
+        @media (max-width: 500px) {
+            .btn { padding: 8px 12px; font-size: 0.8rem; }
+            .level-btn { padding: 6px 15px; font-size: 0.85rem; }
+            h1 { font-size: 1.6rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <a href="index.html" class="home-btn" aria-label="Home">🏠 Home</a>
+    <h1>🐛 Wiggly Worm Home 🍎</h1>
+    <div class="sub">help the worm reach the juicy apple!</div>
+    <div class="parent-tip">Drag your finger along the path. Say: "Wiggle wiggle to the apple!" No rush, just fun.</div>
+
+    <div class="level-buttons">
+        <button class="level-btn active" data-level="easy">🌱 Easy (short path)</button>
+        <button class="level-btn" data-level="hard">⭐ Hard (longer path)</button>
+    </div>
+
+    <div class="canvas-wrapper">
+        <canvas id="mazeCanvas" width="500" height="500" style="width:100%; height:auto; max-width:500px; aspect-ratio:1/1"></canvas>
+    </div>
+
+    <div class="button-group">
+        <button class="btn reset-selection-btn" id="resetSelectionBtn">🗑️ Clear Path</button>
+        <button class="btn new-game-btn" id="newGameBtn">🎲 New Maze</button>
+        <button class="btn show-answer-btn" id="showAnswerBtn">🔍 Show Path</button>
+    </div>
+    <div class="message-area" id="message"></div>
+</div>
+
+<script>
+    (function(){
+        const canvas = document.getElementById('mazeCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let currentLevel = 'easy';
+        let mazeData = null;
+        let userPath = [];
+        let isShowingAnswer = false;
+        let drawingEnabled = true;
+        
+        let audioCtx = null;
+        let soundEnabled = false;
+        
+        let GRID_SIZE = 10;
+        let CELL_W, CELL_H;
+        
+        // Generate maze with guaranteed start and end on paths
+        function generateMaze(width, height) {
+            // Initialize grid with all walls
+            let grid = Array(height).fill().map(() => Array(width).fill(1));
+            
+            // Carve passages using recursive backtracker
+            let startX = 1, startY = 1;
+            grid[startY][startX] = 0;
+            
+            let stack = [{x: startX, y: startY}];
+            let visited = new Set();
+            visited.add(`${startX},${startY}`);
+            
+            const directions = [
+                {x: 0, y: -2}, {x: 2, y: 0}, {x: 0, y: 2}, {x: -2, y: 0}
+            ];
+            
+            while(stack.length > 0) {
+                let current = stack[stack.length-1];
+                let neighbors = [];
+                
+                for(let dir of directions) {
+                    let nx = current.x + dir.x;
+                    let ny = current.y + dir.y;
+                    if(nx > 0 && nx < width-1 && ny > 0 && ny < height-1 && !visited.has(`${nx},${ny}`)) {
+                        neighbors.push({x: nx, y: ny, dx: dir.x/2, dy: dir.y/2});
+                    }
+                }
+                
+                if(neighbors.length > 0) {
+                    let next = neighbors[Math.floor(Math.random() * neighbors.length)];
+                    grid[next.y][next.x] = 0;
+                    grid[current.y + next.dy][current.x + next.dx] = 0;
+                    visited.add(`${next.x},${next.y}`);
+                    stack.push({x: next.x, y: next.y});
+                } else {
+                    stack.pop();
+                }
+            }
+            
+            // Find all path cells (where grid[y][x] === 0)
+            let pathCells = [];
+            for(let y=0; y<height; y++) {
+                for(let x=0; x<width; x++) {
+                    if(grid[y][x] === 0) {
+                        pathCells.push({x, y});
+                    }
+                }
+            }
+            
+            // Set start at top-left area path cell
+            let start = pathCells.find(cell => cell.x === 1 && cell.y === 1) || pathCells[0];
+            
+            // Set end at bottom-right area path cell (furthest from start)
+            let end = pathCells.reduce((furthest, cell) => {
+                let dist = Math.abs(cell.x - start.x) + Math.abs(cell.y - start.y);
+                let furthestDist = Math.abs(furthest.x - start.x) + Math.abs(furthest.y - start.y);
+                return dist > furthestDist ? cell : furthest;
+            }, start);
+            
+            // Find solution path using BFS
+            let solution = findShortestPath(grid, start, end);
+            
+            return { grid, start, end, solution };
+        }
+        
+        function findShortestPath(grid, start, end) {
+            let queue = [{x: start.x, y: start.y, path: [{x: start.x, y: start.y}]}];
+            let visited = new Set();
+            visited.add(`${start.x},${start.y}`);
+            
+            while(queue.length > 0) {
+                let current = queue.shift();
+                if(current.x === end.x && current.y === end.y) {
+                    return current.path;
+                }
+                
+                let neighbors = [
+                    {x: current.x+1, y: current.y},
+                    {x: current.x-1, y: current.y},
+                    {x: current.x, y: current.y+1},
+                    {x: current.x, y: current.y-1}
+                ];
+                
+                for(let n of neighbors) {
+                    if(n.x >= 0 && n.x < grid[0].length && n.y >= 0 && n.y < grid.length &&
+                       grid[n.y][n.x] === 0 && !visited.has(`${n.x},${n.y}`)) {
+                        visited.add(`${n.x},${n.y}`);
+                        queue.push({x: n.x, y: n.y, path: [...current.path, {x: n.x, y: n.y}]});
+                    }
+                }
+            }
+            return [{x: start.x, y: start.y}];
+        }
+        
+        function initMaze() {
+            GRID_SIZE = currentLevel === 'easy' ? 10 : 15;
+            mazeData = generateMaze(GRID_SIZE, GRID_SIZE);
+            userPath = [{x: mazeData.start.x, y: mazeData.start.y}];
+            isShowingAnswer = false;
+            drawingEnabled = true;
+            drawMaze();
+        }
+        
+        function drawMaze() {
+            if(!canvas || !ctx) return;
+            const size = Math.min(canvas.clientWidth, canvas.clientHeight);
+            canvas.width = size;
+            canvas.height = size;
+            CELL_W = canvas.width / GRID_SIZE;
+            CELL_H = canvas.height / GRID_SIZE;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw background (dirt)
+            ctx.fillStyle = '#F5DEB3';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw walls and paths
+            for(let y=0; y<GRID_SIZE; y++) {
+                for(let x=0; x<GRID_SIZE; x++) {
+                    let cellX = x * CELL_W;
+                    let cellY = y * CELL_H;
+                    
+                    if(mazeData.grid[y][x] === 1) {
+                        // Wall - dirt/brown
+                        ctx.fillStyle = '#8B6914';
+                        ctx.fillRect(cellX, cellY, CELL_W, CELL_H);
+                        ctx.fillStyle = '#A0762C';
+                        ctx.beginPath();
+                        ctx.arc(cellX + CELL_W/2, cellY + CELL_H/2, CELL_W*0.12, 0, Math.PI*2);
+                        ctx.fill();
+                    } else {
+                        // Path - lighter dirt
+                        ctx.fillStyle = '#F5DEB3';
+                        ctx.fillRect(cellX, cellY, CELL_W, CELL_H);
+                        ctx.fillStyle = '#EED9A0';
+                        ctx.fillRect(cellX+2, cellY+2, CELL_W-4, CELL_H-4);
+                    }
+                }
+            }
+            
+            // Draw user's traced path (green)
+            if(userPath.length > 1 && !isShowingAnswer) {
+                ctx.beginPath();
+                ctx.lineWidth = CELL_W * 0.4;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.strokeStyle = '#2ECC71';
+                for(let i=0; i<userPath.length-1; i++) {
+                    let p1 = userPath[i];
+                    let p2 = userPath[i+1];
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x * CELL_W + CELL_W/2, p1.y * CELL_H + CELL_H/2);
+                    ctx.lineTo(p2.x * CELL_W + CELL_W/2, p2.y * CELL_H + CELL_H/2);
+                    ctx.stroke();
+                }
+                let last = userPath[userPath.length-1];
+                drawWorm(last.x * CELL_W + CELL_W/2, last.y * CELL_H + CELL_H/2, CELL_W * 0.55);
+            } else if(userPath.length === 1 && !isShowingAnswer) {
+                let start = userPath[0];
+                drawWorm(start.x * CELL_W + CELL_W/2, start.y * CELL_H + CELL_H/2, CELL_W * 0.55);
+            }
+            
+            // Draw solution path if showing answer
+            if(isShowingAnswer && mazeData.solution && mazeData.solution.length > 0) {
+                ctx.beginPath();
+                ctx.lineWidth = CELL_W * 0.35;
+                ctx.lineCap = 'round';
+                ctx.setLineDash([8, 8]);
+                ctx.strokeStyle = '#FF8C00';
+                for(let i=0; i<mazeData.solution.length-1; i++) {
+                    let p1 = mazeData.solution[i];
+                    let p2 = mazeData.solution[i+1];
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x * CELL_W + CELL_W/2, p1.y * CELL_H + CELL_H/2);
+                    ctx.lineTo(p2.x * CELL_W + CELL_W/2, p2.y * CELL_H + CELL_H/2);
+                    ctx.stroke();
+                }
+                ctx.setLineDash([]);
+            }
+            
+            // Draw start (worm home - brown circle with worm face)
+            ctx.fillStyle = '#8B4513';
+            ctx.beginPath();
+            ctx.arc(mazeData.start.x * CELL_W + CELL_W/2, mazeData.start.y * CELL_H + CELL_H/2, CELL_W*0.28, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = '#654321';
+            ctx.beginPath();
+            ctx.arc(mazeData.start.x * CELL_W + CELL_W/2 - 3, mazeData.start.y * CELL_H + CELL_H/2 - 3, CELL_W*0.08, 0, Math.PI*2);
+            ctx.fill();
+            
+            // Draw end (apple) - always visible
+            ctx.font = `${CELL_W * 0.55}px "Segoe UI Emoji"`;
+            ctx.fillStyle = '#FF6347';
+            ctx.fillText("🍎", mazeData.end.x * CELL_W + CELL_W*0.25, mazeData.end.y * CELL_H + CELL_H*0.8);
+            
+            // Add pulsing glow to apple if not reached yet
+            if(userPath[userPath.length-1].x !== mazeData.end.x || userPath[userPath.length-1].y !== mazeData.end.y) {
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = '#FFD700';
+                ctx.fillText("🍎", mazeData.end.x * CELL_W + CELL_W*0.25, mazeData.end.y * CELL_H + CELL_H*0.8);
+                ctx.shadowBlur = 0;
+            }
+        }
+        
+        function drawWorm(x, y, size) {
+            ctx.fillStyle = '#7CFC00';
+            ctx.beginPath();
+            ctx.arc(x, y, size*0.65, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = '#228B22';
+            ctx.beginPath();
+            ctx.arc(x - size*0.2, y - size*0.2, size*0.12, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(x - size*0.27, y - size*0.27, size*0.07, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(x - size*0.3, y - size*0.3, size*0.03, 0, Math.PI*2);
+            ctx.fill();
+            // Happy smile
+            ctx.beginPath();
+            ctx.arc(x - size*0.1, y + size*0.1, size*0.12, 0.05, Math.PI - 0.05);
+            ctx.strokeStyle = '#8B4513';
+            ctx.lineWidth = size*0.08;
+            ctx.stroke();
+        }
+        
+        function getGridFromPixel(clientX, clientY) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const canvasX = (clientX - rect.left) * scaleX;
+            const canvasY = (clientY - rect.top) * scaleY;
+            if(canvasX < 0 || canvasX > canvas.width || canvasY < 0 || canvasY > canvas.height) return null;
+            const gridX = Math.floor(canvasX / CELL_W);
+            const gridY = Math.floor(canvasY / CELL_H);
+            if(gridX < 0 || gridX >= GRID_SIZE || gridY < 0 || gridY >= GRID_SIZE) return null;
+            return {x: gridX, y: gridY};
+        }
+        
+        function tryAddToPath(gridPos) {
+            if(!drawingEnabled || isShowingAnswer) return false;
+            if(!gridPos) return false;
+            
+            let last = userPath[userPath.length-1];
+            let isAdjacent = (Math.abs(gridPos.x - last.x) + Math.abs(gridPos.y - last.y)) === 1;
+            if(!isAdjacent) return false;
+            
+            if(mazeData.grid[gridPos.y][gridPos.x] === 1) {
+                playSound('wrong');
+                showMessage("🐛 Oops! Worms can't dig through dirt walls!", false);
+                return false;
+            }
+            
+            let alreadyVisited = userPath.some(p => p.x === gridPos.x && p.y === gridPos.y);
+            if(alreadyVisited) {
+                playSound('wrong');
+                showMessage("🔄 Already wiggled there! Try a new spot!", false);
+                return false;
+            }
+            
+            userPath.push({x: gridPos.x, y: gridPos.y});
+            playSound('correct');
+            drawMaze();
+            
+            if(gridPos.x === mazeData.end.x && gridPos.y === mazeData.end.y) {
+                winGame();
+            }
+            return true;
+        }
+        
+        function winGame() {
+            drawingEnabled = false;
+            showMessage("🍎 YAY! The worm found the apple! 🎉🐛", true);
+            triggerConfetti();
+        }
+        
+        function resetSelection() {
+            if(isShowingAnswer) {
+                showMessage("Hide the path first!", false);
+                return;
+            }
+            userPath = [{x: mazeData.start.x, y: mazeData.start.y}];
+            drawingEnabled = true;
+            drawMaze();
+            showMessage("✨ Path cleared! Start wiggling from the worm!", false);
+            playSound('correct');
+        }
+        
+        function newGame() {
+            if(isShowingAnswer) {
+                showMessage("Hide the path first!", false);
+                return;
+            }
+            initMaze();
+            showMessage("🎲 Fresh maze! Help the worm find the apple!", false);
+            playSound('correct');
+        }
+        
+        function showAnswer() {
+            if(!isShowingAnswer) {
+                isShowingAnswer = true;
+                drawingEnabled = false;
+                drawMaze();
+                showMessage("🔍 Follow the dotted orange path to the apple!", false);
+            } else {
+                isShowingAnswer = false;
+                drawingEnabled = true;
+                drawMaze();
+                showMessage("✨ Path hidden! Keep wiggling to the apple!", false);
+            }
+            playSound('correct');
+        }
+        
+        function triggerConfetti() {
+            for(let i=0;i<40;i++) {
+                const conf = document.createElement('div');
+                conf.innerText = ['🐛','🍎','✨','🌟','🌈','🍃','⭐'][Math.floor(Math.random()*7)];
+                conf.style.position = 'fixed';
+                conf.style.left = (canvas.getBoundingClientRect().left + canvas.width/2 + (Math.random()-0.5)*180) + 'px';
+                conf.style.top = (canvas.getBoundingClientRect().top + 50) + 'px';
+                conf.style.fontSize = (20+Math.random()*25)+'px';
+                conf.style.pointerEvents = 'none';
+                conf.style.zIndex = '999';
+                conf.style.transition = 'all 0.8s ease-out';
+                document.body.appendChild(conf);
+                setTimeout(() => { conf.style.transform = `translateY(${120+Math.random()*180}px) rotate(${Math.random()*360}deg)`; conf.style.opacity = '0'; }, 10);
+                setTimeout(() => conf.remove(), 900);
+            }
+        }
+        
+        function showMessage(msg, isWin=false) {
+            const msgDiv = document.getElementById('message');
+            if(isWin) {
+                msgDiv.innerHTML = `<span class="win">🎉 ${msg} 🎉</span>`;
+            } else {
+                msgDiv.innerHTML = `<span>${msg}</span>`;
+            }
+            if(!isWin) {
+                setTimeout(() => {
+                    if(msgDiv.innerHTML === `<span>${msg}</span>`) msgDiv.innerHTML = '';
+                }, 2000);
+            }
+        }
+        
+        function initAudio() {
+            if(!audioCtx && window.AudioContext) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            soundEnabled = true;
+            if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        }
+        
+        function playSound(type) {
+            if(!audioCtx) initAudio();
+            if(!audioCtx) return;
+            if(audioCtx.state === 'suspended') {
+                audioCtx.resume().then(() => playSound(type));
+                return;
+            }
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = 'sine';
+                osc.frequency.value = type === 'correct' ? 880 : 440;
+                gain.gain.value = 0.12;
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3);
+                osc.stop(audioCtx.currentTime + 0.3);
+            } catch(e) {}
+        }
+        
+        function setLevel(level) {
+            if(isShowingAnswer) {
+                showMessage("Hide the path first!", false);
+                return;
+            }
+            currentLevel = level;
+            document.querySelectorAll('.level-btn').forEach(btn => {
+                if(btn.dataset.level === level) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+            initMaze();
+            showMessage(`🌱 ${level === 'easy' ? 'Short path' : 'Long path'} - Find the apple!`, false);
+        }
+        
+        function handleStart(e) {
+            e.preventDefault();
+            initAudio();
+        }
+        
+        function handleMove(e) {
+            e.preventDefault();
+            if(isShowingAnswer || !drawingEnabled) return;
+            let point;
+            if(e.touches) point = getGridFromPixel(e.touches[0].clientX, e.touches[0].clientY);
+            else point = getGridFromPixel(e.clientX, e.clientY);
+            if(point) tryAddToPath(point);
+        }
+        
+        function attachEvents() {
+            canvas.addEventListener('touchstart', handleStart);
+            canvas.addEventListener('touchmove', handleMove);
+            canvas.addEventListener('mousedown', handleStart);
+            canvas.addEventListener('mousemove', (e) => { if(e.buttons === 1) handleMove(e); });
+            document.getElementById('resetSelectionBtn').addEventListener('click', resetSelection);
+            document.getElementById('newGameBtn').addEventListener('click', newGame);
+            document.getElementById('showAnswerBtn').addEventListener('click', showAnswer);
+            document.querySelectorAll('.level-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => setLevel(e.target.dataset.level));
+            });
+        }
+        
+        function init() {
+            attachEvents();
+            initMaze();
+            initAudio();
+        }
+        
+        init();
+    })();
+</script>
+</body>
+</html>

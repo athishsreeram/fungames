@@ -74,6 +74,10 @@
             border: 4px solid #e67e22;
             transform: scale(0.96);
         }
+        .cell.answer-mode {
+            background: #d4efdf;
+            border: 3px solid #27ae60;
+        }
         .animal-bar {
             display: flex;
             justify-content: center;
@@ -102,23 +106,42 @@
             font-weight: bold;
             color: #b45f1b;
         }
-        .reset-btn {
-            background: #f6c445;
-            border: none;
-            font-size: 1.2rem;
-            font-weight: bold;
-            padding: 10px 25px;
-            border-radius: 50px;
-            color: #4a2e1a;
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
             margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            border: none;
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 10px 18px;
+            border-radius: 50px;
             cursor: pointer;
             font-family: inherit;
-            box-shadow: 0 5px 0 #b46f1a;
             transition: 0.05s linear;
+            box-shadow: 0 4px 0 #8b6b42;
         }
-        .reset-btn:active {
+        .btn:active {
             transform: translateY(2px);
-            box-shadow: 0 2px 0 #b46f1a;
+            box-shadow: 0 1px 0 #8b6b42;
+        }
+        .reset-selection-btn {
+            background: #95a5a6;
+            color: white;
+            box-shadow: 0 4px 0 #5d6d6e;
+        }
+        .new-game-btn {
+            background: #3498db;
+            color: white;
+            box-shadow: 0 4px 0 #1f618d;
+        }
+        .show-answer-btn {
+            background: #e67e22;
+            color: white;
+            box-shadow: 0 4px 0 #b45f1b;
         }
         .message-area {
             margin-top: 12px;
@@ -151,15 +174,31 @@
             background: #e67e22;
             color: white;
         }
+        .home-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            background: #fff8f0;
+            color: #b45f1b;
+            border: 2px solid #fad6a5;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: 800;
+            box-shadow: 0 4px 0 #8b6b42;
+        }
+        .home-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #8b6b42; }
         @media (max-width: 450px) {
             .grid { gap: 6px; padding: 12px; }
             .cell { font-size: 2rem; }
             .animal-btn { padding: 6px 14px; font-size: 1.6rem; }
+            .btn { padding: 8px 14px; font-size: 0.85rem; }
         }
     </style>
 </head>
 <body>
 <div class="game-container" id="gameContainer">
+    <a href="index.html" class="home-btn" aria-label="Home">🏠 Home</a>
     <h1>🐣 Cuddle Zoo 🐨</h1>
     <div class="sub">fill each row & column with 4 different animals!</div>
 
@@ -172,7 +211,11 @@
 
     <div class="animal-bar" id="animalBar"></div>
 
-    <button class="reset-btn" id="resetBtn">🔄 New Puzzle</button>
+    <div class="button-group">
+        <button class="btn reset-selection-btn" id="resetSelectionBtn">🔁 Reset Selection</button>
+        <button class="btn new-game-btn" id="newGameBtn">🎲 New Game</button>
+        <button class="btn show-answer-btn" id="showAnswerBtn">🔍 Show Answer</button>
+    </div>
     <div class="message-area" id="message"></div>
 </div>
 
@@ -184,28 +227,98 @@
 
         let currentLevel = 'easy';   // 'easy' or 'hard'
         let gridData = [];            // 4x4, stores animal index (0-3) or -1 for empty
+        let solutionData = [];        // stored solution for current puzzle
         let selectedRow = -1, selectedCol = -1;
         let currentAnimalIdx = 0;     // default elephant
+        let isShowingAnswer = false;   // track if answer is being shown
 
         let audioCtx = null;
         let soundEnabled = false;
 
-        // ---------- PUZZLE DATABASES ----------
-        // predefined puzzles that guarantee unique solution (row+col uniqueness)
+        // ---------- PUZZLE DATABASES (with solutions) ----------
         const puzzles = {
-            easy: [
-                [0, -1, -1, 1],
-                [-1, 2, -1, -1],
-                [-1, -1, 3, -1],
-                [2, -1, -1, 0]
-            ],
-            hard: [
-                [0, -1, -1, -1],
-                [-1, -1, 1, -1],
-                [-1, 2, -1, -1],
-                [-1, -1, -1, 3]
-            ]
+            easy: {
+                grid: [
+                    [0, -1, -1, 1],
+                    [-1, 2, -1, -1],
+                    [-1, -1, 3, -1],
+                    [2, -1, -1, 0]
+                ],
+                solution: [
+                    [0, 3, 2, 1],
+                    [1, 2, 0, 3],
+                    [3, 1, 3, 2],
+                    [2, 0, 1, 0]
+                ]
+            },
+            hard: {
+                grid: [
+                    [0, -1, -1, -1],
+                    [-1, -1, 1, -1],
+                    [-1, 2, -1, -1],
+                    [-1, -1, -1, 3]
+                ],
+                solution: [
+                    [0, 3, 2, 1],
+                    [2, 1, 0, 3],
+                    [3, 2, 1, 0],
+                    [1, 0, 3, 2]
+                ]
+            }
         };
+
+        // Additional random puzzle generator
+        function generateRandomPuzzle() {
+            // Start with empty grid
+            let puzzle = [
+                [-1, -1, -1, -1],
+                [-1, -1, -1, -1],
+                [-1, -1, -1, -1],
+                [-1, -1, -1, -1]
+            ];
+            
+            // Fill with a valid solution first (simple pattern)
+            let sol = [
+                [0, 1, 2, 3],
+                [1, 2, 3, 0],
+                [2, 3, 0, 1],
+                [3, 0, 1, 2]
+            ];
+            
+            // Randomly shuffle rows/columns to create variety
+            for(let i=0; i<5; i++) {
+                const r1 = Math.floor(Math.random() * 4);
+                const r2 = Math.floor(Math.random() * 4);
+                [sol[r1], sol[r2]] = [sol[r2], sol[r1]];
+            }
+            
+            // Remove some cells to create puzzle (keep ~6-8 clues)
+            let clues = currentLevel === 'easy' ? 6 : 4;
+            let positions = [];
+            for(let i=0; i<4; i++)
+                for(let j=0; j<4; j++)
+                    positions.push([i,j]);
+            
+            // Shuffle positions
+            for(let i=positions.length-1; i>0; i--) {
+                const j = Math.floor(Math.random() * (i+1));
+                [positions[i], positions[j]] = [positions[j], positions[i]];
+            }
+            
+            for(let i=0; i<clues; i++) {
+                const [r,c] = positions[i];
+                puzzle[r][c] = sol[r][c];
+            }
+            
+            return { grid: puzzle, solution: sol };
+        }
+
+        function getCurrentPuzzle() {
+            if (currentLevel === 'random') {
+                return generateRandomPuzzle();
+            }
+            return puzzles[currentLevel];
+        }
 
         function initAudio() {
             if (!audioCtx && window.AudioContext) {
@@ -268,17 +381,16 @@
                 msgDiv.innerHTML = `<span>${msg}</span>`;
             }
             setTimeout(() => {
-                if(!isWin) msgDiv.innerHTML = '';
-            }, 1500);
+                if(!isWin && msgDiv.innerHTML === `<span>${msg}</span>`) msgDiv.innerHTML = '';
+            }, 2000);
         }
 
         function triggerConfettiEffect() {
-            // simple canvas confetti simulation without external libs
             const container = document.getElementById('gameContainer');
             const rect = container.getBoundingClientRect();
             for(let i=0;i<30;i++) {
                 const conf = document.createElement('div');
-                conf.innerText = ['🎉','✨','⭐','🦄','🌈'][Math.floor(Math.random()*5)];
+                conf.innerText = ['🎉','✨','⭐','🦄','🌈','🐘','🦒'][Math.floor(Math.random()*7)];
                 conf.style.position = 'fixed';
                 conf.style.left = (rect.left + rect.width/2 + (Math.random()-0.5)*150) + 'px';
                 conf.style.top = (rect.top + 20) + 'px';
@@ -307,14 +419,19 @@
                         cell.innerText = '?';
                         cell.classList.add('empty');
                     }
-                    if(selectedRow === i && selectedCol === j) cell.classList.add('selected');
-                    cell.addEventListener('click', (function(r,c){ return function(){ selectCell(r,c); }; })(i,j));
+                    if(selectedRow === i && selectedCol === j && !isShowingAnswer) cell.classList.add('selected');
+                    if(isShowingAnswer) cell.classList.add('answer-mode');
+                    cell.addEventListener('click', (function(r,c){ return function(){ if(!isShowingAnswer) selectCell(r,c); }; })(i,j));
                     gridEl.appendChild(cell);
                 }
             }
         }
 
         function selectCell(row, col) {
+            if(isShowingAnswer) {
+                showMessage("👆 Press 'Show Answer' again to hide answer and keep playing!");
+                return;
+            }
             selectedRow = row;
             selectedCol = col;
             renderGrid();
@@ -330,14 +447,14 @@
             if(gridData[row][col] !== -1) {
                 showMessage(`🛑 That spot already has ${ANIMAL_NAMES[gridData[row][col]]}!`);
                 playSound('wrong');
-                return;
+                return false;
             }
             // check row and column uniqueness
             for(let i=0;i<4;i++) {
                 if(gridData[row][i] === animalIdx || gridData[i][col] === animalIdx) {
                     showMessage(`❌ ${ANIMAL_NAMES[animalIdx]} already in this row or column!`);
                     playSound('wrong');
-                    return;
+                    return false;
                 }
             }
             // valid placement
@@ -348,21 +465,62 @@
             if(checkVictory()) {
                 showMessage(`YOU DID IT! Zoo is full! 🦒🐘🐧🐨`, true);
             }
+            return true;
         }
 
-        function loadPuzzle() {
-            const puzzle = puzzles[currentLevel];
-            // deep copy
-            gridData = puzzle.map(row => [...row]);
+        function resetSelection() {
             selectedRow = -1;
             selectedCol = -1;
+            renderGrid();
+            showMessage("✨ Selection cleared! Tap any empty cell to place an animal.");
+            playSound('correct');
+        }
+
+        function loadPuzzle(puzzleData = null) {
+            const puzzleSource = puzzleData || getCurrentPuzzle();
+            // deep copy grid
+            gridData = puzzleSource.grid.map(row => [...row]);
+            solutionData = puzzleSource.solution.map(row => [...row]);
+            selectedRow = -1;
+            selectedCol = -1;
+            isShowingAnswer = false;
             renderGrid();
             const msgDiv = document.getElementById('message');
             msgDiv.innerHTML = '';
         }
 
-        function resetGame() {
-            loadPuzzle();
+        function newGame() {
+            // generate brand new random puzzle
+            const newPuzzle = generateRandomPuzzle();
+            loadPuzzle(newPuzzle);
+            showMessage("🎲 Brand new zoo! Let's fill it up!");
+            playSound('correct');
+        }
+
+        function showAnswer() {
+            if (!isShowingAnswer) {
+                // Show answer by temporarily filling grid with solution
+                for(let i=0; i<4; i++) {
+                    for(let j=0; j<4; j++) {
+                        if(gridData[i][j] === -1) {
+                            gridData[i][j] = solutionData[i][j];
+                        }
+                    }
+                }
+                isShowingAnswer = true;
+                renderGrid();
+                showMessage("🔍 Here's the answer! Press again to hide and keep playing.");
+                playSound('correct');
+            } else {
+                // Hide answer: restore original puzzle state
+                const currentPuzzle = getCurrentPuzzle();
+                gridData = currentPuzzle.grid.map(row => [...row]);
+                isShowingAnswer = false;
+                selectedRow = -1;
+                selectedCol = -1;
+                renderGrid();
+                showMessage("✨ Answer hidden! Keep solving on your own ✨");
+            }
         }
 
         function buildAnimalBar() {
@@ -373,6 +531,10 @@
                 btn.className = 'animal-btn';
                 btn.innerHTML = `${animal} <span>${ANIMAL_NAMES[idx]}</span>`;
                 btn.addEventListener('click', () => {
+                    if(isShowingAnswer) {
+                        showMessage("👆 Hide answer first before placing animals!");
+                        return;
+                    }
                     currentAnimalIdx = idx;
                     highlightSelectedAnimal(idx);
                     showMessage(`✨ Now placing: ${ANIMAL_NAMES[idx]} ✨`);
@@ -391,21 +553,39 @@
         }
 
         function setLevel(level) {
+            if(isShowingAnswer) {
+                showMessage("Please hide answer before changing level!");
+                return;
+            }
             currentLevel = level;
             document.querySelectorAll('.level-btn').forEach(btn => {
                 if(btn.dataset.level === level) btn.classList.add('active');
                 else btn.classList.remove('active');
             });
             loadPuzzle();
+            showMessage(`🌱 ${level === 'easy' ? 'Easy mode' : 'Hard mode'} - Let's play!`);
         }
 
         function attachEvents() {
-            document.getElementById('resetBtn').addEventListener('click', () => {
-                resetGame();
-                playSound('correct');
+            document.getElementById('resetSelectionBtn').addEventListener('click', () => {
+                resetSelection();
+            });
+            document.getElementById('newGameBtn').addEventListener('click', () => {
+                if(isShowingAnswer) {
+                    showMessage("Hide answer first before starting a new game!");
+                    return;
+                }
+                newGame();
+            });
+            document.getElementById('showAnswerBtn').addEventListener('click', () => {
+                showAnswer();
             });
             document.querySelectorAll('.level-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
+                    if(isShowingAnswer) {
+                        showMessage("Hide answer first before changing difficulty!");
+                        return;
+                    }
                     setLevel(e.target.dataset.level);
                 });
             });
