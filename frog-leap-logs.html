@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Frog Leap Logs - Bridge Building for Toddlers</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a6b8a 0%, #0e4d64 100%);
+            font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Comic Neue', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+        .home-btn {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            background: #4CAF50;
+            color: white;
+            font-size: 1.8rem;
+            text-decoration: none;
+            padding: 12px 18px;
+            border-radius: 50px;
+            box-shadow: 0 5px 0 #2E7D32;
+            transition: 0.05s linear;
+            z-index: 100;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .home-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #2E7D32;
+        }
+        .game-container {
+            max-width: 600px;
+            width: 100%;
+            background: #E8F5E9;
+            border-radius: 60px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            padding: 20px 16px 30px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        h1 {
+            font-size: 2rem;
+            margin: 0 0 5px;
+            color: #2E7D32;
+        }
+        .sub {
+            font-size: 0.9rem;
+            color: #558B2F;
+            margin-bottom: 15px;
+        }
+        .parent-tip {
+            background: #FFF8E1;
+            border-left: 8px solid #4CAF50;
+            padding: 10px 15px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+            color: #33691E;
+            text-align: left;
+        }
+        .parent-tip::before {
+            content: "💡 Parent Tip: ";
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .canvas-wrapper {
+            background: #A5D6A7;
+            border-radius: 40px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: inset 0 0 0 3px #C8E6C9, 0 8px 18px rgba(0,0,0,0.1);
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background: #81C784;
+            border-radius: 30px;
+            cursor: pointer;
+            touch-action: none;
+            width: 100%;
+            height: auto;
+        }
+        .level-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .level-btn {
+            background: #C8E6C9;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.05s linear;
+        }
+        .level-btn.active {
+            background: #4CAF50;
+            color: white;
+            box-shadow: 0 3px 0 #2E7D32;
+        }
+        .level-btn:active {
+            transform: translateY(2px);
+        }
+        .counter {
+            font-size: 1.2rem;
+            margin: 10px 0;
+            background: #FFF8E1;
+            display: inline-block;
+            padding: 5px 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            color: #2E7D32;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 15px 0 10px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            border: none;
+            font-size: 0.9rem;
+            font-weight: bold;
+            padding: 10px 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.05s linear;
+            box-shadow: 0 4px 0 #558B2F;
+        }
+        .btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #558B2F;
+        }
+        .reset-selection-btn {
+            background: #FFA726;
+            color: white;
+            box-shadow: 0 4px 0 #E65100;
+        }
+        .new-game-btn {
+            background: #66BB6A;
+            color: white;
+            box-shadow: 0 4px 0 #2E7D32;
+        }
+        .show-answer-btn {
+            background: #42A5F5;
+            color: white;
+            box-shadow: 0 4px 0 #1565C0;
+        }
+        .message-area {
+            margin-top: 12px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            min-height: 55px;
+        }
+        .win {
+            color: #27ae60;
+            background: #D5F5E3;
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 40px;
+        }
+        @media (max-width: 500px) {
+            .btn { padding: 8px 12px; font-size: 0.8rem; }
+            .level-btn { padding: 6px 15px; font-size: 0.85rem; }
+            h1 { font-size: 1.6rem; }
+            .home-btn { font-size: 1.3rem; padding: 8px 14px; top: 10px; left: 10px; }
+        }
+    </style>
+</head>
+<body>
+<a href="index.html" class="home-btn" aria-label="Home">🏠 Home</a>
+
+<div class="game-container">
+    <h1>🐸 Frog Leap Logs 🌉</h1>
+    <div class="sub">draw bridges so every frog can visit its friend!</div>
+    <div class="parent-tip">Each lily pad has a number - that's how many bridges it needs! Drag from one pad to another to draw a bridge. No crossing bridges!</div>
+
+    <div class="level-buttons">
+        <button class="level-btn active" data-level="easy">🌱 Easy (3 lily pads)</button>
+        <button class="level-btn" data-level="hard">⭐ Hard (5 lily pads)</button>
+    </div>
+
+    <div class="counter" id="counter">🌉 Bridges built: 0 / 0</div>
+
+    <div class="canvas-wrapper">
+        <canvas id="bridgeCanvas" width="500" height="500" style="width:100%; height:auto; aspect-ratio:1/1"></canvas>
+    </div>
+
+    <div class="button-group">
+        <button class="btn reset-selection-btn" id="resetSelectionBtn">🗑️ Clear Bridges</button>
+        <button class="btn new-game-btn" id="newGameBtn">🎲 New Pond</button>
+        <button class="btn show-answer-btn" id="showAnswerBtn">🔍 Show Bridges</button>
+    </div>
+    <div class="message-area" id="message"></div>
+</div>
+
+<script>
+    (function(){
+        const canvas = document.getElementById('bridgeCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let currentLevel = 'easy';
+        let lilyPads = [];        // {x, y, requiredBridges, currentBridges, id}
+        let bridges = [];          // {from, to, direction} direction: 'right', 'left', 'up', 'down'
+        let solutionBridges = [];
+        let selectedPad = -1;
+        let isShowingAnswer = false;
+        let gameWon = false;
+        
+        let audioCtx = null;
+        let soundEnabled = false;
+        
+        let GRID_SIZE = 500;
+        let PAD_RADIUS = 30;
+        
+        function initAudio() {
+            if(!audioCtx && window.AudioContext) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            soundEnabled = true;
+            if(audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+        
+        function playSound(type) {
+            if(!audioCtx) initAudio();
+            if(!audioCtx) return;
+            if(audioCtx.state === 'suspended') {
+                audioCtx.resume().then(() => playSound(type));
+                return;
+            }
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = 'sine';
+                if(type === 'correct') {
+                    osc.frequency.value = 880;
+                    gain.gain.value = 0.15;
+                } else if(type === 'wrong') {
+                    osc.frequency.value = 440;
+                    gain.gain.value = 0.12;
+                } else if(type === 'place') {
+                    osc.frequency.value = 660;
+                    gain.gain.value = 0.1;
+                }
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3);
+                osc.stop(audioCtx.currentTime + 0.3);
+            } catch(e) {}
+        }
+        
+        function playRibbit() {
+            if(!audioCtx) initAudio();
+            if(!audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = 'triangle';
+                osc.frequency.value = 500;
+                gain.gain.value = 0.2;
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.4);
+                osc.stop(audioCtx.currentTime + 0.4);
+            } catch(e) {}
+        }
+        
+        function generateRandomPuzzle() {
+            let numPads = currentLevel === 'easy' ? 3 : 5;
+            let pads = [];
+            
+            // Generate positions in a circle or grid pattern
+            let centerX = GRID_SIZE / 2;
+            let centerY = GRID_SIZE / 2;
+            let radius = 150;
+            
+            if(numPads === 3) {
+                // Triangle formation
+                let angles = [0, 120, 240];
+                for(let i = 0; i < numPads; i++) {
+                    let angle = (angles[i] * Math.PI) / 180;
+                    let x = centerX + radius * Math.cos(angle);
+                    let y = centerY + radius * Math.sin(angle);
+                    pads.push({x, y, requiredBridges: 2, currentBridges: 0, id: i});
+                }
+            } else {
+                // Pentagon formation
+                for(let i = 0; i < numPads; i++) {
+                    let angle = (i * 72 - 90) * Math.PI / 180;
+                    let x = centerX + radius * Math.cos(angle);
+                    let y = centerY + radius * Math.sin(angle);
+                    pads.push({x, y, requiredBridges: 2, currentBridges: 0, id: i});
+                }
+            }
+            
+            // Generate solution bridges (connect in a cycle)
+            let solution = [];
+            for(let i = 0; i < numPads; i++) {
+                let next = (i + 1) % numPads;
+                let from = pads[i];
+                let to = pads[next];
+                let direction = getDirection(from, to);
+                solution.push({from: i, to: next, direction});
+            }
+            
+            return {pads, solution};
+        }
+        
+        function getDirection(from, to) {
+            let dx = to.x - from.x;
+            let dy = to.y - from.y;
+            if(Math.abs(dx) > Math.abs(dy)) {
+                return dx > 0 ? 'right' : 'left';
+            } else {
+                return dy > 0 ? 'down' : 'up';
+            }
+        }
+        
+        function initPuzzle() {
+            let puzzleData = generateRandomPuzzle();
+            lilyPads = puzzleData.pads.map(pad => ({
+                ...pad,
+                currentBridges: 0
+            }));
+            solutionBridges = puzzleData.solution;
+            bridges = [];
+            selectedPad = -1;
+            isShowingAnswer = false;
+            gameWon = false;
+            updateCounter();
+            drawCanvas();
+        }
+        
+        function updateCounter() {
+            let totalRequired = lilyPads.reduce((sum, pad) => sum + pad.requiredBridges, 0);
+            let totalBuilt = bridges.length * 2; // each bridge counts for 2 pads
+            let built = totalBuilt / 2;
+            document.getElementById('counter').innerHTML = `🌉 Bridges built: ${built} / ${lilyPads.length}`;
+            
+            // Check win
+            let allComplete = lilyPads.every(pad => pad.currentBridges === pad.requiredBridges);
+            if(allComplete && !gameWon && lilyPads.length > 0) {
+                gameWon = true;
+                playRibbit();
+                showMessage(`🎉 RIBBIT! All bridges are built! Frogs can visit! 🎉🐸`, true);
+                triggerConfetti();
+            }
+        }
+        
+        function drawCanvas() {
+            if(!canvas || !ctx) return;
+            const size = Math.min(canvas.clientWidth, canvas.clientHeight);
+            canvas.width = size;
+            canvas.height = size;
+            GRID_SIZE = size;
+            PAD_RADIUS = Math.max(25, size / 15);
+            
+            ctx.clearRect(0, 0, size, size);
+            
+            // Draw water background
+            ctx.fillStyle = '#81C784';
+            ctx.fillRect(0, 0, size, size);
+            
+            // Draw ripples
+            ctx.fillStyle = '#A5D6A7';
+            for(let i = 0; i < 50; i++) {
+                ctx.beginPath();
+                ctx.ellipse(Math.random() * size, Math.random() * size, Math.random() * 8 + 2, Math.random() * 5 + 1, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Draw bridges
+            let bridgesToDraw = isShowingAnswer ? solutionBridges : bridges;
+            for(let bridge of bridgesToDraw) {
+                let from = lilyPads[bridge.from];
+                let to = lilyPads[bridge.to];
+                if(from && to) {
+                    ctx.beginPath();
+                    ctx.moveTo(from.x, from.y);
+                    ctx.lineTo(to.x, to.y);
+                    ctx.lineWidth = 12;
+                    ctx.strokeStyle = '#8B4513';
+                    ctx.stroke();
+                    ctx.lineWidth = 6;
+                    ctx.strokeStyle = '#DEB887';
+                    ctx.stroke();
+                    
+                    // Draw logs (little lines across bridge)
+                    let steps = 5;
+                    for(let s = 1; s <= steps; s++) {
+                        let t = s / (steps + 1);
+                        let ix = from.x + (to.x - from.x) * t;
+                        let iy = from.y + (to.y - from.y) * t;
+                        ctx.beginPath();
+                        ctx.moveTo(ix - 8, iy - 4);
+                        ctx.lineTo(ix + 8, iy + 4);
+                        ctx.lineWidth = 4;
+                        ctx.strokeStyle = '#A0522D';
+                        ctx.stroke();
+                    }
+                }
+            }
+            
+            // Draw lily pads
+            for(let i = 0; i < lilyPads.length; i++) {
+                let pad = lilyPads[i];
+                
+                // Lily pad base
+                ctx.fillStyle = '#4CAF50';
+                ctx.beginPath();
+                ctx.ellipse(pad.x, pad.y, PAD_RADIUS, PAD_RADIUS * 0.7, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#388E3C';
+                ctx.beginPath();
+                ctx.ellipse(pad.x - 3, pad.y - 2, PAD_RADIUS * 0.5, PAD_RADIUS * 0.35, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Number (required bridges)
+                ctx.font = `bold ${Math.floor(PAD_RADIUS * 0.8)}px "Segoe UI Emoji"`;
+                ctx.fillStyle = 'white';
+                ctx.shadowBlur = 3;
+                ctx.shadowColor = 'black';
+                ctx.fillText(pad.requiredBridges, pad.x - 12, pad.y + 10);
+                ctx.shadowBlur = 0;
+                
+                // Current bridges count indicator
+                if(pad.currentBridges > 0) {
+                    ctx.font = `${Math.floor(PAD_RADIUS * 0.5)}px "Segoe UI Emoji"`;
+                    ctx.fillStyle = '#FFD700';
+                    ctx.fillText(`✓${pad.currentBridges}`, pad.x + 15, pad.y - 10);
+                }
+                
+                // Frog on top
+                ctx.font = `${Math.floor(PAD_RADIUS * 0.9)}px "Segoe UI Emoji"`;
+                ctx.fillStyle = '#33691E';
+                ctx.fillText("🐸", pad.x - 8, pad.y - 8);
+            }
+            
+            // Draw selection highlight
+            if(selectedPad !== -1 && !isShowingAnswer) {
+                let pad = lilyPads[selectedPad];
+                ctx.beginPath();
+                ctx.arc(pad.x, pad.y, PAD_RADIUS + 8, 0, Math.PI * 2);
+                ctx.strokeStyle = '#FFD700';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+            }
+        }
+        
+        function getPadIndex(x, y) {
+            for(let i = 0; i < lilyPads.length; i++) {
+                let pad = lilyPads[i];
+                let dx = pad.x - x;
+                let dy = pad.y - y;
+                let dist = Math.sqrt(dx * dx + dy * dy);
+                if(dist <= PAD_RADIUS + 15) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+        
+        function canAddBridge(fromIdx, toIdx) {
+            if(fromIdx === toIdx) return false;
+            
+            // Check if bridge already exists
+            let bridgeExists = bridges.some(b => 
+                (b.from === fromIdx && b.to === toIdx) || 
+                (b.from === toIdx && b.to === fromIdx)
+            );
+            if(bridgeExists) return false;
+            
+            // Check if either pad has reached its required bridges
+            let fromPad = lilyPads[fromIdx];
+            let toPad = lilyPads[toIdx];
+            if(fromPad.currentBridges >= fromPad.requiredBridges) return false;
+            if(toPad.currentBridges >= toPad.requiredBridges) return false;
+            
+            return true;
+        }
+        
+        function addBridge(fromIdx, toIdx) {
+            if(!canAddBridge(fromIdx, toIdx)) {
+                playSound('wrong');
+                showMessage("❌ Can't add bridge there! Check the numbers!", false);
+                return false;
+            }
+            
+            let direction = getDirection(lilyPads[fromIdx], lilyPads[toIdx]);
+            bridges.push({from: fromIdx, to: toIdx, direction});
+            lilyPads[fromIdx].currentBridges++;
+            lilyPads[toIdx].currentBridges++;
+            
+            playSound('place');
+            updateCounter();
+            drawCanvas();
+            return true;
+        }
+        
+        function resetSelection() {
+            if(isShowingAnswer) {
+                showMessage("Hide the answer first!", false);
+                return;
+            }
+            selectedPad = -1;
+            drawCanvas();
+            showMessage("✨ Selection cleared!", false);
+            playSound('correct');
+        }
+        
+        function clearAllBridges() {
+            if(isShowingAnswer) {
+                showMessage("Hide the answer first!", false);
+                return false;
+            }
+            bridges = [];
+            lilyPads.forEach(pad => pad.currentBridges = 0);
+            selectedPad = -1;
+            gameWon = false;
+            updateCounter();
+            drawCanvas();
+            showMessage("🗑️ All bridges cleared! Start fresh!", false);
+            playSound('correct');
+            return true;
+        }
+        
+        function newGame() {
+            if(isShowingAnswer) {
+                showMessage("Hide the answer first!", false);
+                return;
+            }
+            initPuzzle();
+            showMessage("🎲 New pond! Build bridges so frogs can visit!", false);
+            playSound('correct');
+        }
+        
+        function showAnswer() {
+            if(!isShowingAnswer) {
+                isShowingAnswer = true;
+                drawCanvas();
+                showMessage("🔍 Here are the correct bridges! Press again to hide.", false);
+            } else {
+                isShowingAnswer = false;
+                drawCanvas();
+                showMessage("✨ Bridges hidden! Keep building!", false);
+            }
+            playSound('correct');
+        }
+        
+        function triggerConfetti() {
+            const container = document.querySelector('.game-container');
+            const rect = container.getBoundingClientRect();
+            const emojis = ['🐸', '🐸', '🌉', '✨', '🌟', '🌈', '⭐', '💚', '🍃'];
+            for(let i = 0; i < 50; i++) {
+                const conf = document.createElement('div');
+                conf.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                conf.style.position = 'fixed';
+                conf.style.left = (rect.left + rect.width/2 + (Math.random() - 0.5) * 180) + 'px';
+                conf.style.top = (rect.top + 50) + 'px';
+                conf.style.fontSize = (18 + Math.random() * 25) + 'px';
+                conf.style.pointerEvents = 'none';
+                conf.style.zIndex = '999';
+                conf.style.transition = 'all 0.8s ease-out';
+                document.body.appendChild(conf);
+                setTimeout(() => {
+                    conf.style.transform = `translateY(${120 + Math.random() * 180}px) rotate(${Math.random() * 360}deg)`;
+                    conf.style.opacity = '0';
+                }, 10);
+                setTimeout(() => conf.remove(), 900);
+            }
+        }
+        
+        function showMessage(msg, isWin = false) {
+            const msgDiv = document.getElementById('message');
+            if(isWin) {
+                msgDiv.innerHTML = `<span class="win">🎉 ${msg} 🎉</span>`;
+            } else {
+                msgDiv.innerHTML = `<span>${msg}</span>`;
+            }
+            if(!isWin) {
+                setTimeout(() => {
+                    if(msgDiv.innerHTML === `<span>${msg}</span>`) msgDiv.innerHTML = '';
+                }, 2000);
+            }
+        }
+        
+        function setLevel(level) {
+            if(isShowingAnswer) {
+                showMessage("Hide the answer first!", false);
+                return;
+            }
+            currentLevel = level;
+            document.querySelectorAll('.level-btn').forEach(btn => {
+                if(btn.dataset.level === level) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+            initPuzzle();
+            let numPads = currentLevel === 'easy' ? 3 : 5;
+            showMessage(`${level === 'easy' ? '🌱 Easy: 3 lily pads' : '⭐ Hard: 5 lily pads'} - Connect them all!`, false);
+        }
+        
+        function handleCanvasTap(e) {
+            if(isShowingAnswer || gameWon) return;
+            e.preventDefault();
+            
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            let clientX, clientY;
+            if(e.touches) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            
+            const canvasX = (clientX - rect.left) * scaleX;
+            const canvasY = (clientY - rect.top) * scaleY;
+            
+            const padIdx = getPadIndex(canvasX, canvasY);
+            
+            if(padIdx === -1) {
+                selectedPad = -1;
+                drawCanvas();
+                return;
+            }
+            
+            if(selectedPad === -1) {
+                selectedPad = padIdx;
+                drawCanvas();
+                showMessage(`🐸 Selected lily pad ${padIdx + 1}! Now tap another pad to build a bridge.`, false);
+            } else {
+                if(selectedPad !== padIdx) {
+                    addBridge(selectedPad, padIdx);
+                }
+                selectedPad = -1;
+                drawCanvas();
+            }
+        }
+        
+        function attachEvents() {
+            canvas.addEventListener('touchstart', handleCanvasTap);
+            canvas.addEventListener('mousedown', handleCanvasTap);
+            document.getElementById('resetSelectionBtn').addEventListener('click', () => clearAllBridges());
+            document.getElementById('newGameBtn').addEventListener('click', newGame);
+            document.getElementById('showAnswerBtn').addEventListener('click', showAnswer);
+            document.querySelectorAll('.level-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => setLevel(e.target.dataset.level));
+            });
+            document.body.addEventListener('touchstart', () => initAudio());
+            document.body.addEventListener('click', () => initAudio());
+        }
+        
+        function init() {
+            attachEvents();
+            initPuzzle();
+            initAudio();
+        }
+        
+        init();
+    })();
+</script>
+</body>
+</html>
