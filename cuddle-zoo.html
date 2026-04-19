@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Cuddle Zoo - Animal Grid Puzzle</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #e0f7e8 0%, #c8e6df 100%);
+            font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Nunito', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .game-container {
+            max-width: 550px;
+            width: 100%;
+            background: white;
+            border-radius: 60px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            padding: 20px 16px 30px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2rem;
+            margin: 0 0 5px;
+            color: #e67e22;
+        }
+        .sub {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            background: #fef5e7;
+            padding: 18px;
+            border-radius: 40px;
+            margin-bottom: 20px;
+        }
+        .cell {
+            aspect-ratio: 1 / 1;
+            background: #fff8f0;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.8rem;
+            cursor: pointer;
+            transition: 0.05s linear;
+            border: 3px solid #fad6a5;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .cell.empty {
+            background: #fff3e0;
+            border: 3px dashed #f7c56e;
+        }
+        .cell.filled {
+            background: #ffe8cc;
+            border-color: #f39c12;
+        }
+        .cell.selected {
+            background: #ffe0b5;
+            border: 4px solid #e67e22;
+            transform: scale(0.96);
+        }
+        .animal-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+        .animal-btn {
+            background: #fef1cf;
+            border-radius: 50px;
+            padding: 10px 20px;
+            font-size: 2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            border: 2px solid #ffe0a3;
+            transition: 0.05s linear;
+        }
+        .animal-btn:active {
+            transform: scale(0.92);
+            background: #ffe0b5;
+        }
+        .animal-btn span {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #b45f1b;
+        }
+        .reset-btn {
+            background: #f6c445;
+            border: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 10px 25px;
+            border-radius: 50px;
+            color: #4a2e1a;
+            margin-top: 12px;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 5px 0 #b46f1a;
+            transition: 0.05s linear;
+        }
+        .reset-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #b46f1a;
+        }
+        .message-area {
+            margin-top: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            min-height: 50px;
+        }
+        .win {
+            color: #27ae60;
+            background: #d5f5e3;
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 40px;
+        }
+        .level-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        .level-btn {
+            background: #d5dbdb;
+            border: none;
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .level-btn.active {
+            background: #e67e22;
+            color: white;
+        }
+        @media (max-width: 450px) {
+            .grid { gap: 6px; padding: 12px; }
+            .cell { font-size: 2rem; }
+            .animal-btn { padding: 6px 14px; font-size: 1.6rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container" id="gameContainer">
+    <h1>🐣 Cuddle Zoo 🐨</h1>
+    <div class="sub">fill each row & column with 4 different animals!</div>
+
+    <div class="level-buttons">
+        <button class="level-btn active" data-level="easy">🌱 Easy</button>
+        <button class="level-btn" data-level="hard">⭐ Hard</button>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="animal-bar" id="animalBar"></div>
+
+    <button class="reset-btn" id="resetBtn">🔄 New Puzzle</button>
+    <div class="message-area" id="message"></div>
+</div>
+
+<script>
+    (function(){
+        // ANIMALS: elephant, giraffe, penguin, koala
+        const ANIMALS = ['🐘', '🦒', '🐧', '🐨'];
+        const ANIMAL_NAMES = ['Elephant', 'Giraffe', 'Penguin', 'Koala'];
+
+        let currentLevel = 'easy';   // 'easy' or 'hard'
+        let gridData = [];            // 4x4, stores animal index (0-3) or -1 for empty
+        let selectedRow = -1, selectedCol = -1;
+        let currentAnimalIdx = 0;     // default elephant
+
+        let audioCtx = null;
+        let soundEnabled = false;
+
+        // ---------- PUZZLE DATABASES ----------
+        // predefined puzzles that guarantee unique solution (row+col uniqueness)
+        const puzzles = {
+            easy: [
+                [0, -1, -1, 1],
+                [-1, 2, -1, -1],
+                [-1, -1, 3, -1],
+                [2, -1, -1, 0]
+            ],
+            hard: [
+                [0, -1, -1, -1],
+                [-1, -1, 1, -1],
+                [-1, 2, -1, -1],
+                [-1, -1, -1, 3]
+            ]
+        };
+
+        function initAudio() {
+            if (!audioCtx && window.AudioContext) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            soundEnabled = true;
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled && audioCtx) { soundEnabled = true; }
+            if (!audioCtx) { initAudio(); return; }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume().then(() => playSound(type));
+                return;
+            }
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = 'sine';
+                let freq = type === 'correct' ? 880 : 440;
+                osc.frequency.value = freq;
+                gain.gain.value = 0.2;
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.4);
+                osc.stop(audioCtx.currentTime + 0.4);
+            } catch(e) { console.log('audio err'); }
+        }
+
+        function checkVictory() {
+            for(let r=0; r<4; r++) {
+                for(let c=0; c<4; c++) {
+                    if(gridData[r][c] === -1) return false;
+                }
+            }
+            // all filled, now validate rows & columns
+            for(let i=0; i<4; i++) {
+                let rowSet = new Set();
+                let colSet = new Set();
+                for(let j=0; j<4; j++) {
+                    rowSet.add(gridData[i][j]);
+                    colSet.add(gridData[j][i]);
+                }
+                if(rowSet.size !== 4 || colSet.size !== 4) return false;
+            }
+            return true;
+        }
+
+        function showMessage(msg, isWin=false) {
+            const msgDiv = document.getElementById('message');
+            if(isWin) {
+                msgDiv.innerHTML = `<span class="win">🎉 ${msg} 🎉</span>`;
+                playSound('correct');
+                triggerConfettiEffect();
+            } else {
+                msgDiv.innerHTML = `<span>${msg}</span>`;
+            }
+            setTimeout(() => {
+                if(!isWin) msgDiv.innerHTML = '';
+            }, 1500);
+        }
+
+        function triggerConfettiEffect() {
+            // simple canvas confetti simulation without external libs
+            const container = document.getElementById('gameContainer');
+            const rect = container.getBoundingClientRect();
+            for(let i=0;i<30;i++) {
+                const conf = document.createElement('div');
+                conf.innerText = ['🎉','✨','⭐','🦄','🌈'][Math.floor(Math.random()*5)];
+                conf.style.position = 'fixed';
+                conf.style.left = (rect.left + rect.width/2 + (Math.random()-0.5)*150) + 'px';
+                conf.style.top = (rect.top + 20) + 'px';
+                conf.style.fontSize = (20+Math.random()*20)+'px';
+                conf.style.pointerEvents = 'none';
+                conf.style.zIndex = '999';
+                conf.style.transition = 'all 0.8s ease-out';
+                document.body.appendChild(conf);
+                setTimeout(() => { conf.style.transform = `translateY(${150+Math.random()*100}px) rotate(${Math.random()*360}deg)`; conf.style.opacity = '0'; }, 10);
+                setTimeout(() => conf.remove(), 900);
+            }
+        }
+
+        function renderGrid() {
+            const gridEl = document.getElementById('grid');
+            gridEl.innerHTML = '';
+            for(let i=0; i<4; i++) {
+                for(let j=0; j<4; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    const val = gridData[i][j];
+                    if(val !== -1) {
+                        cell.innerText = ANIMALS[val];
+                        cell.classList.add('filled');
+                    } else {
+                        cell.innerText = '?';
+                        cell.classList.add('empty');
+                    }
+                    if(selectedRow === i && selectedCol === j) cell.classList.add('selected');
+                    cell.addEventListener('click', (function(r,c){ return function(){ selectCell(r,c); }; })(i,j));
+                    gridEl.appendChild(cell);
+                }
+            }
+        }
+
+        function selectCell(row, col) {
+            selectedRow = row;
+            selectedCol = col;
+            renderGrid();
+            // auto-place current selected animal if cell empty
+            if(gridData[row][col] === -1) {
+                placeAnimal(row, col, currentAnimalIdx);
+            } else {
+                showMessage(`🐾 That's a ${ANIMAL_NAMES[gridData[row][col]]}! Tap empty spot to place new animal.`);
+            }
+        }
+
+        function placeAnimal(row, col, animalIdx) {
+            if(gridData[row][col] !== -1) {
+                showMessage(`🛑 That spot already has ${ANIMAL_NAMES[gridData[row][col]]}!`);
+                playSound('wrong');
+                return;
+            }
+            // check row and column uniqueness
+            for(let i=0;i<4;i++) {
+                if(gridData[row][i] === animalIdx || gridData[i][col] === animalIdx) {
+                    showMessage(`❌ ${ANIMAL_NAMES[animalIdx]} already in this row or column!`);
+                    playSound('wrong');
+                    return;
+                }
+            }
+            // valid placement
+            gridData[row][col] = animalIdx;
+            playSound('correct');
+            renderGrid();
+
+            if(checkVictory()) {
+                showMessage(`YOU DID IT! Zoo is full! 🦒🐘🐧🐨`, true);
+            }
+        }
+
+        function loadPuzzle() {
+            const puzzle = puzzles[currentLevel];
+            // deep copy
+            gridData = puzzle.map(row => [...row]);
+            selectedRow = -1;
+            selectedCol = -1;
+            renderGrid();
+            const msgDiv = document.getElementById('message');
+            msgDiv.innerHTML = '';
+        }
+
+        function resetGame() {
+            loadPuzzle();
+        }
+
+        function buildAnimalBar() {
+            const bar = document.getElementById('animalBar');
+            bar.innerHTML = '';
+            ANIMALS.forEach((animal, idx) => {
+                const btn = document.createElement('div');
+                btn.className = 'animal-btn';
+                btn.innerHTML = `${animal} <span>${ANIMAL_NAMES[idx]}</span>`;
+                btn.addEventListener('click', () => {
+                    currentAnimalIdx = idx;
+                    highlightSelectedAnimal(idx);
+                    showMessage(`✨ Now placing: ${ANIMAL_NAMES[idx]} ✨`);
+                });
+                bar.appendChild(btn);
+            });
+            highlightSelectedAnimal(0);
+        }
+
+        function highlightSelectedAnimal(idx) {
+            const btns = document.querySelectorAll('.animal-btn');
+            btns.forEach((btn, i) => {
+                if(i === idx) btn.style.background = '#f7dc9c';
+                else btn.style.background = '#fef1cf';
+            });
+        }
+
+        function setLevel(level) {
+            currentLevel = level;
+            document.querySelectorAll('.level-btn').forEach(btn => {
+                if(btn.dataset.level === level) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+            loadPuzzle();
+        }
+
+        function attachEvents() {
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                resetGame();
+                playSound('correct');
+            });
+            document.querySelectorAll('.level-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    setLevel(e.target.dataset.level);
+                });
+            });
+            document.body.addEventListener('touchstart', (e) => {
+                if(!soundEnabled) initAudio();
+            });
+            document.body.addEventListener('click', (e) => {
+                if(!soundEnabled) initAudio();
+            });
+        }
+
+        function initGame() {
+            buildAnimalBar();
+            attachEvents();
+            loadPuzzle();
+            initAudio();
+        }
+
+        initGame();
+    })();
+</script>
+</body>
+</html>
