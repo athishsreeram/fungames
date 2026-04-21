@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Choo-Choo Path - Train Track Builder</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #5D4037 0%, #3E2723 100%);
+            font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Comic Neue', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+        .home-btn {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            background: #FF5722;
+            color: white;
+            font-size: 1.8rem;
+            text-decoration: none;
+            padding: 12px 18px;
+            border-radius: 50px;
+            box-shadow: 0 5px 0 #BF360C;
+            transition: 0.05s linear;
+            z-index: 100;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .home-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #BF360C;
+        }
+        .game-container {
+            max-width: 600px;
+            width: 100%;
+            background: #FFF8E1;
+            border-radius: 60px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            padding: 20px 16px 30px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        h1 {
+            font-size: 2rem;
+            margin: 0 0 5px;
+            color: #E65100;
+        }
+        .sub {
+            font-size: 0.9rem;
+            color: #BF360C;
+            margin-bottom: 15px;
+        }
+        .parent-tip {
+            background: #FFFDE7;
+            border-left: 8px solid #FF5722;
+            padding: 10px 15px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+            color: #4E342E;
+            text-align: left;
+        }
+        .parent-tip::before {
+            content: "💡 Parent Tip: ";
+            font-weight: bold;
+            color: #FF5722;
+        }
+        .canvas-wrapper {
+            background: #D7CCC8;
+            border-radius: 40px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: inset 0 0 0 3px #FFFDE7, 0 8px 18px rgba(0,0,0,0.1);
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background: #BCAAA4;
+            border-radius: 30px;
+            cursor: pointer;
+            touch-action: none;
+            width: 100%;
+            height: auto;
+        }
+        .level-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .level-btn {
+            background: #D7CCC8;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.05s linear;
+        }
+        .level-btn.active {
+            background: #FF5722;
+            color: white;
+            box-shadow: 0 3px 0 #BF360C;
+        }
+        .level-btn:active {
+            transform: translateY(2px);
+        }
+        .counter {
+            font-size: 1.1rem;
+            margin: 10px 0;
+            background: #FFFDE7;
+            display: inline-block;
+            padding: 5px 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            color: #E65100;
+        }
+        .track-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+        .track-btn {
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.05s linear;
+            box-shadow: 0 4px 0 #8D6E63;
+            background: #FFCC80;
+            color: #4E342E;
+        }
+        .track-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #8D6E63;
+        }
+        .track-btn.active-tool {
+            background: #FF9800;
+            color: white;
+            box-shadow: 0 0 0 3px #FFD54F, 0 4px 0 #8D6E63;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 15px 0 10px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            border: none;
+            font-size: 0.9rem;
+            font-weight: bold;
+            padding: 10px 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.05s linear;
+            box-shadow: 0 4px 0 #8D6E63;
+        }
+        .btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #8D6E63;
+        }
+        .reset-selection-btn {
+            background: #FF9800;
+            color: white;
+        }
+        .new-game-btn {
+            background: #4CAF50;
+            color: white;
+        }
+        .show-answer-btn {
+            background: #2196F3;
+            color: white;
+        }
+        .message-area {
+            margin-top: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            min-height: 55px;
+        }
+        .win {
+            color: #27ae60;
+            background: #D5F5E3;
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 40px;
+        }
+        @media (max-width: 500px) {
+            .btn { padding: 8px 12px; font-size: 0.75rem; }
+            .track-btn { padding: 6px 15px; font-size: 0.9rem; }
+            .level-btn { padding: 6px 15px; font-size: 0.8rem; }
+            h1 { font-size: 1.5rem; }
+            .home-btn { font-size: 1.3rem; padding: 8px 14px; top: 10px; left: 10px; }
+        }
+    </style>
+</head>
+<body>
+<a href="index.html" class="home-btn" aria-label="Home">🏠 Home</a>
+
+<div class="game-container">
+    <h1>🚂 Choo-Choo Path 🚃</h1>
+    <div class="sub">build a train track from the station to the toy store!</div>
+    <div class="parent-tip">Tap on the grid to place tracks. The numbers tell you how many tracks go in each row and column. Connect the red station to the green toy store!</div>
+
+    <div class="level-buttons">
+        <button class="level-btn active" data-level="easy">🌱 Easy (3x3)</button>
+        <button class="level-btn" data-level="hard">⭐ Hard (4x4)</button>
+    </div>
+
+    <div class="counter" id="counter">🚂 Tracks placed: 0 / 0</div>
+
+    <div class="track-buttons">
+        <button class="track-btn" data-track="straight">─ Straight ─</button>
+        <button class="track-btn" data-track="turn">└ Turn ┘</button>
+        <button class="track-btn" data-track="empty">❌ Empty</button>
+    </div>
+
+    <div class="canvas-wrapper">
+        <canvas id="trackCanvas" width="450" height="450" style="width:100%; height:auto; aspect-ratio:1/1"></canvas>
+    </div>
+
+    <div class="button-group">
+        <button class="btn reset-selection-btn" id="resetSelectionBtn">🗑️ Clear All</button>
+        <button class="btn new-game-btn" id="newGameBtn">🎲 New Track</button>
+        <button class="btn show-answer-btn" id="showAnswerBtn">🔍 Show Path</button>
+    </div>
+    <div class="message-area" id="message"></div>
+</div>
+
+<script>
+    (function(){
+        const canvas = document.getElementById('trackCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let currentLevel = 'easy';
+        let GRID_SIZE = 3;
+        let gridData = [];      // each cell: 'straight', 'turn', 'empty'
+        let solutionData = [];
+        let rowHints = [];
+        let colHints = [];
+        let selectedTrack = 'straight';
+        let isShowingAnswer = false;
+        let gameWon = false;
+        
+        let startPos = { row: 0, col: 0 };
+        let endPos = { row: 2, col: 2 };
+        
+        let audioCtx = null;
+        let soundEnabled = false;
+        
+        let CELL_W, CELL_H;
+        let canvasSize = 450;
+        
+        function initAudio() {
+            if(!audioCtx && window.AudioContext) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            soundEnabled = true;
+            if(audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+        
+        function playSound(type) {
+            if(!audioCtx) initAudio();
+            if(!audioCtx) return;
+            if(audioCtx.state === 'suspended') {
+                audioCtx.resume().then(() => playSound(type));
+                return;
+            }
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = 'sine';
+                if(type === 'correct') {
+                    osc.frequency.value = 880;
+                    gain.gain.value = 0.15;
+                } else if(type === 'wrong') {
+                    osc.frequency.value = 440;
+                    gain.gain.value = 0.12;
+                } else if(type === 'place') {
+                    osc.frequency.value = 660;
+                    gain.gain.value = 0.1;
+                }
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3);
+                osc.stop(audioCtx.currentTime + 0.3);
+            } catch(e) {}
+        }
+        
+        function playChooChoo() {
+            if(!audioCtx) initAudio();
+            if(!audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = 'triangle';
+                osc.frequency.value = 400;
+                gain.gain.value = 0.2;
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.5);
+                osc.stop(audioCtx.currentTime + 0.5);
+                
+                setTimeout(() => {
+                    const osc2 = audioCtx.createOscillator();
+                    const gain2 = audioCtx.createGain();
+                    osc2.connect(gain2);
+                    gain2.connect(audioCtx.destination);
+                    osc2.type = 'triangle';
+                    osc2.frequency.value = 300;
+                    gain2.gain.value = 0.15;
+                    osc2.start();
+                    gain2.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.4);
+                    osc2.stop(audioCtx.currentTime + 0.4);
+                }, 200);
+            } catch(e) {}
+        }
+        
+        function generateRandomSolution() {
+            let size = GRID_SIZE;
+            // Create a simple path from start to end
+            let path = [];
+            let visited = Array(size).fill().map(() => Array(size).fill(false));
+            
+            // Simple path: go right then down (or down then right depending on start/end)
+            let current = { row: startPos.row, col: startPos.col };
+            path.push({ row: current.row, col: current.col });
+            visited[current.row][current.col] = true;
+            
+            // Move right until near end column
+            while(current.col < endPos.col) {
+                current = { row: current.row, col: current.col + 1 };
+                path.push({ row: current.row, col: current.col });
+                visited[current.row][current.col] = true;
+            }
+            // Move down until end row
+            while(current.row < endPos.row) {
+                current = { row: current.row + 1, col: current.col };
+                path.push({ row: current.row, col: current.col });
+                visited[current.row][current.col] = true;
+            }
+            
+            // Convert path to track types
+            let solution = Array(size).fill().map(() => Array(size).fill('empty'));
+            for(let i = 0; i < path.length; i++) {
+                let cell = path[i];
+                let prev = path[i-1];
+                let next = path[i+1];
+                
+                if(!prev && !next) {
+                    solution[cell.row][cell.col] = 'straight';
+                } else if(!prev) {
+                    // Start cell - just point to next
+                    solution[cell.row][cell.col] = 'straight';
+                } else if(!next) {
+                    // End cell
+                    solution[cell.row][cell.col] = 'straight';
+                } else {
+                    // Determine if straight or turn
+                    let fromDir = { dr: cell.row - prev.row, dc: cell.col - prev.col };
+                    let toDir = { dr: next.row - cell.row, dc: next.col - cell.col };
+                    if(fromDir.dr === toDir.dr && fromDir.dc === toDir.dc) {
+                        solution[cell.row][cell.col] = 'straight';
+                    } else {
+                        solution[cell.row][cell.col] = 'turn';
+                    }
+                }
+            }
+            
+            return solution;
+        }
+        
+        function calculateHints(solution) {
+            let size = GRID_SIZE;
+            let rowCounts = Array(size).fill(0);
+            let colCounts = Array(size).fill(0);
+            
+            for(let r = 0; r < size; r++) {
+                for(let c = 0; c < size; c++) {
+                    if(solution[r][c] !== 'empty') {
+                        rowCounts[r]++;
+                        colCounts[c]++;
+                    }
+                }
+            }
+            return { rowCounts, colCounts };
+        }
+        
+        function createPuzzleFromSolution(solution) {
+            let size = GRID_SIZE;
+            let puzzle = solution.map(row => [...row]);
+            let totalTracks = 0;
+            for(let r = 0; r < size; r++) {
+                for(let c = 0; c < size; c++) {
+                    if(solution[r][c] !== 'empty') totalTracks++;
+                }
+            }
+            
+            let cluesToKeep = currentLevel === 'easy' ? Math.floor(totalTracks * 0.6) : Math.floor(totalTracks * 0.4);
+            
+            let positions = [];
+            for(let i = 0; i < size; i++) {
+                for(let j = 0; j < size; j++) {
+                    if(solution[i][j] !== 'empty') {
+                        positions.push([i, j]);
+                    }
+                }
+            }
+            
+            // Shuffle
+            for(let i = positions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [positions[i], positions[j]] = [positions[j], positions[i]];
+            }
+            
+            for(let i = cluesToKeep; i < positions.length; i++) {
+                let [r, c] = positions[i];
+                puzzle[r][c] = 'empty';
+            }
+            
+            return puzzle;
+        }
+        
+        function initPuzzle() {
+            GRID_SIZE = currentLevel === 'easy' ? 3 : 4;
+            startPos = { row: 0, col: 0 };
+            endPos = { row: GRID_SIZE - 1, col: GRID_SIZE - 1 };
+            
+            let solution = generateRandomSolution();
+            solutionData = solution.map(row => [...row]);
+            gridData = createPuzzleFromSolution(solution);
+            
+            let hints = calculateHints(solutionData);
+            rowHints = hints.rowCounts;
+            colHints = hints.colCounts;
+            
+            isShowingAnswer = false;
+            gameWon = false;
+            updateCounter();
+            drawCanvas();
+        }
+        
+        function updateCounter() {
+            let count = 0;
+            for(let r = 0; r < GRID_SIZE; r++) {
+                for(let c = 0; c < GRID_SIZE; c++) {
+                    if(gridData[r][c] !== 'empty') count++;
+                }
+            }
+            let total = 0;
+            for(let r = 0; r < GRID_SIZE; r++) {
+                for(let c = 0; c < GRID_SIZE; c++) {
+                    if(solutionData[r][c] !== 'empty') total++;
+                }
+            }
+            document.getElementById('counter').innerHTML = `🚂 Tracks placed: ${count} / ${total}`;
+            
+            // Check win
+            if(count === total && !gameWon) {
+                let isCorrect = true;
+                for(let r = 0; r < GRID_SIZE && isCorrect; r++) {
+                    for(let c = 0; c < GRID_SIZE && isCorrect; c++) {
+                        if(gridData[r][c] !== solutionData[r][c]) isCorrect = false;
+                    }
+                }
+                if(isCorrect) {
+                    gameWon = true;
+                    playChooChoo();
+                    showMessage(`🎉 CHOO CHOO! The train reached the toy store! 🎉🚂`, true);
+                    triggerConfetti();
+                }
+            }
+        }
+        
+        function drawCanvas() {
+            if(!canvas || !ctx) return;
+            const container = canvas.parentElement;
+            const maxSize = Math.min(container.clientWidth, 450);
+            canvas.width = maxSize;
+            canvas.height = maxSize;
+            canvasSize = maxSize;
+            
+            CELL_W = canvasSize / GRID_SIZE;
+            CELL_H = canvasSize / GRID_SIZE;
+            
+            ctx.clearRect(0, 0, canvasSize, canvasSize);
+            
+            // Draw background (dirt/grass)
+            ctx.fillStyle = '#BCAAA4';
+            ctx.fillRect(0, 0, canvasSize, canvasSize);
+            
+            // Draw grid lines
+            ctx.strokeStyle = '#8D6E63';
+            ctx.lineWidth = 1;
+            for(let i = 0; i <= GRID_SIZE; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * CELL_W, 0);
+                ctx.lineTo(i * CELL_W, canvasSize);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, i * CELL_H);
+                ctx.lineTo(canvasSize, i * CELL_H);
+                ctx.stroke();
+            }
+            
+            // Draw row hints (left side)
+            ctx.font = `bold ${Math.floor(CELL_H * 0.35)}px "Segoe UI Emoji"`;
+            ctx.fillStyle = '#E65100';
+            ctx.shadowBlur = 0;
+            for(let r = 0; r < GRID_SIZE; r++) {
+                ctx.fillText(`${rowHints[r]}`, 8, r * CELL_H + CELL_H/2 + 6);
+            }
+            
+            // Draw column hints (top)
+            for(let c = 0; c < GRID_SIZE; c++) {
+                ctx.fillText(`${colHints[c]}`, c * CELL_W + CELL_W/2 - 8, 18);
+            }
+            
+            // Draw tracks
+            let tracksToDraw = isShowingAnswer ? solutionData : gridData;
+            
+            for(let r = 0; r < GRID_SIZE; r++) {
+                for(let c = 0; c < GRID_SIZE; c++) {
+                    let cellX = c * CELL_W;
+                    let cellY = r * CELL_H;
+                    let centerX = cellX + CELL_W/2;
+                    let centerY = cellY + CELL_H/2;
+                    
+                    if(tracksToDraw[r][c] === 'straight') {
+                        ctx.beginPath();
+                        ctx.moveTo(cellX + 5, centerY);
+                        ctx.lineTo(cellX + CELL_W - 5, centerY);
+                        ctx.lineWidth = CELL_W * 0.2;
+                        ctx.strokeStyle = '#5D4037';
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.moveTo(centerX, cellY + 5);
+                        ctx.lineTo(centerX, cellY + CELL_H - 5);
+                        ctx.stroke();
+                        // Railroad ties
+                        ctx.fillStyle = '#8D6E63';
+                        for(let i = -2; i <= 2; i++) {
+                            ctx.fillRect(centerX - 3, centerY + i * 6 - 2, 6, 3);
+                            ctx.fillRect(centerX + i * 6 - 2, centerY - 3, 3, 6);
+                        }
+                    } else if(tracksToDraw[r][c] === 'turn') {
+                        // Draw a curved corner
+                        ctx.beginPath();
+                        ctx.arc(centerX, centerY, CELL_W * 0.3, 0, Math.PI * 2);
+                        ctx.strokeStyle = '#5D4037';
+                        ctx.lineWidth = CELL_W * 0.18;
+                        ctx.stroke();
+                        ctx.fillStyle = '#8D6E63';
+                        ctx.fillRect(centerX - 2, centerY - 2, 4, 4);
+                    }
+                }
+            }
+            
+            // Draw start (station)
+            ctx.fillStyle = '#F44336';
+            ctx.beginPath();
+            ctx.arc(startPos.col * CELL_W + CELL_W/2, startPos.row * CELL_H + CELL_H/2, CELL_W * 0.28, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.font = `${Math.floor(CELL_W * 0.35)}px "Segoe UI Emoji"`;
+            ctx.fillText("🚂", startPos.col * CELL_W + CELL_W/2 - 12, startPos.row * CELL_H + CELL_H/2 + 8);
+            
+            // Draw end (toy store)
+            ctx.fillStyle = '#4CAF50';
+            ctx.beginPath();
+            ctx.arc(endPos.col * CELL_W + CELL_W/2, endPos.row * CELL_H + CELL_H/2, CELL_W * 0.28, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.fillText("🎁", endPos.col * CELL_W + CELL_W/2 - 10, endPos.row * CELL_H + CELL_H/2 + 8);
+        }
+        
+        function getCellIndex(clientX, clientY) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const canvasX = (clientX - rect.left) * scaleX;
+            const canvasY = (clientY - rect.top) * scaleY;
+            
+            if(canvasX < 0 || canvasX > canvasSize || canvasY < 0 || canvasY > canvasSize) return null;
+            
+            const col = Math.floor(canvasX / CELL_W);
+            const row = Math.floor(canvasY / CELL_H);
+            if(row >= 0 && row < GRID_SIZE && col >= 0 && col < GRID_SIZE) {
+                return { row, col };
+            }
+            return null;
+        }
+        
+        function placeTrack(row, col) {
+            if(isShowingAnswer || gameWon) return false;
+            if((row === startPos.row && col === startPos.col) || (row === endPos.row && col === endPos.col)) {
+                playSound('wrong');
+                showMessage("❌ Can't change the station or toy store!", false);
+                return false;
+            }
+            
+            let newValue = selectedTrack;
+            if(newValue === 'empty') {
+                gridData[row][col] = 'empty';
+            } else {
+                gridData[row][col] = newValue;
+            }
+            
+            playSound('place');
+            updateCounter();
+            drawCanvas();
+            return true;
+        }
+        
+        function handleCanvasTap(e) {
+            if(isShowingAnswer || gameWon) return;
+            e.preventDefault();
+            
+            const rect = canvas.getBoundingClientRect();
+            let clientX, clientY;
+            if(e.touches) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            
+            const cell = getCellIndex(clientX, clientY);
+            if(cell) {
+                placeTrack(cell.row, cell.col);
+            }
+        }
+        
+        function clearAll() {
+            if(isShowingAnswer) {
+                showMessage("Hide the answer first!", false);
+                return;
+            }
+            for(let r = 0; r < GRID_SIZE; r++) {
+                for(let c = 0; c < GRID_SIZE; c++) {
+                    if((r !== startPos.row || c !== startPos.col) && (r !== endPos.row || c !== endPos.col)) {
+                        gridData[r][c] = 'empty';
+                    }
+                }
+            }
+            gameWon = false;
+            drawCanvas();
+            updateCounter();
+            showMessage("🗑️ All tracks cleared! Start building!", false);
+            playSound('correct');
+        }
+        
+        function newGame() {
+            if(isShowingAnswer) {
+                showMessage("Hide the answer first!", false);
+                return;
+            }
+            initPuzzle();
+            showMessage("🎲 New track! Build a path from station to toy store!", false);
+            playSound('correct');
+        }
+        
+        function showAnswer() {
+            if(!isShowingAnswer) {
+                isShowingAnswer = true;
+                drawCanvas();
+                showMessage("🔍 Here's the correct track! Press again to hide.", false);
+            } else {
+                isShowingAnswer = false;
+                drawCanvas();
+                showMessage("✨ Track hidden! Keep building!", false);
+            }
+            playSound('correct');
+        }
+        
+        function triggerConfetti() {
+            const container = document.querySelector('.game-container');
+            const rect = container.getBoundingClientRect();
+            const emojis = ['🚂', '🚃', '🎁', '✨', '🌟', '🌈', '⭐', '🎉', '🚂'];
+            for(let i = 0; i < 60; i++) {
+                const conf = document.createElement('div');
+                conf.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                conf.style.position = 'fixed';
+                conf.style.left = (rect.left + rect.width/2 + (Math.random() - 0.5) * 200) + 'px';
+                conf.style.top = (rect.top + 50) + 'px';
+                conf.style.fontSize = (18 + Math.random() * 28) + 'px';
+                conf.style.pointerEvents = 'none';
+                conf.style.zIndex = '999';
+                conf.style.transition = 'all 0.8s ease-out';
+                document.body.appendChild(conf);
+                setTimeout(() => {
+                    conf.style.transform = `translateY(${120 + Math.random() * 200}px) rotate(${Math.random() * 360}deg)`;
+                    conf.style.opacity = '0';
+                }, 10);
+                setTimeout(() => conf.remove(), 900);
+            }
+        }
+        
+        function showMessage(msg, isWin = false) {
+            const msgDiv = document.getElementById('message');
+            if(isWin) {
+                msgDiv.innerHTML = `<span class="win">🎉 ${msg} 🎉</span>`;
+            } else {
+                msgDiv.innerHTML = `<span>${msg}</span>`;
+            }
+            if(!isWin) {
+                setTimeout(() => {
+                    if(msgDiv.innerHTML === `<span>${msg}</span>`) msgDiv.innerHTML = '';
+                }, 2500);
+            }
+        }
+        
+        function setLevel(level) {
+            if(isShowingAnswer) {
+                showMessage("Hide the answer first!", false);
+                return;
+            }
+            currentLevel = level;
+            document.querySelectorAll('.level-btn').forEach(btn => {
+                if(btn.dataset.level === level) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+            initPuzzle();
+            let size = currentLevel === 'easy' ? '3x3' : '4x4';
+            showMessage(`${level === 'easy' ? '🌱 Easy: 3x3 grid' : '⭐ Hard: 4x4 grid'} - Follow the row and column numbers!`, false);
+        }
+        
+        function attachEvents() {
+            canvas.addEventListener('touchstart', handleCanvasTap);
+            canvas.addEventListener('mousedown', handleCanvasTap);
+            document.getElementById('resetSelectionBtn').addEventListener('click', clearAll);
+            document.getElementById('newGameBtn').addEventListener('click', newGame);
+            document.getElementById('showAnswerBtn').addEventListener('click', showAnswer);
+            
+            document.querySelectorAll('.track-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    selectedTrack = btn.dataset.track;
+                    document.querySelectorAll('.track-btn').forEach(b => b.classList.remove('active-tool'));
+                    btn.classList.add('active-tool');
+                    let trackName = btn.dataset.track === 'straight' ? '─ Straight Track ─' : (btn.dataset.track === 'turn' ? '└ Turn Track ┘' : '❌ Empty (remove track)');
+                    showMessage(`🚂 Selected: ${trackName}`, false);
+                });
+            });
+            
+            document.querySelectorAll('.level-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => setLevel(e.target.dataset.level));
+            });
+            document.body.addEventListener('touchstart', () => initAudio());
+            document.body.addEventListener('click', () => initAudio());
+            
+            // Set default active tool
+            document.querySelector('.track-btn[data-track="straight"]').classList.add('active-tool');
+        }
+        
+        function init() {
+            attachEvents();
+            initPuzzle();
+            initAudio();
+        }
+        
+        init();
+    })();
+</script>
+</body>
+</html>
